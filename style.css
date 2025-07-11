@@ -45,7 +45,7 @@ section { padding: 5rem 0; overflow-x: hidden; }
 .main-header { background-color: var(--paper); padding: 1rem 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 .main-header .container { display: flex; justify-content: space-between; align-items: center; }
 .logo { display: flex; align-items: center; text-decoration: none; }
-.logo-icon { height: 19px; margin-right: 3px; }
+.logo-icon { height: 32px; margin-right: 3px; }
 .logo-text-stack { display: flex; flex-direction: column; line-height: 1.2; }
 .logo-text { font-size: 1.5rem; font-weight: 700; color: var(--castleton-green); letter-spacing: -1px; }
 .main-nav ul { list-style: none; display: flex; align-items: center; gap: 2rem; }
