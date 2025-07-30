@@ -1,4 +1,4 @@
-// script.js - v10 (Final Version with "Thank You" Message and All Text Restored)
+// script.js - v11 (Final Version with Konami Code and All Text Restored)
 
 // ==================================================
 // ======== 0. FIREBASE SETUP (Module Syntax) =======
@@ -23,7 +23,7 @@ const db = getFirestore(app);
 // ===== 1. GLOBAL HELPER FUNCTIONS & VARIABLES =====
 // ==================================================
 const body = document.body;
-let originalModalHTML = ''; // NEW: Will be used to store and reset the application form
+let originalModalHTML = ''; // Will be used to store and reset the application form
 
 // --- UPDATED: openModal now resets the form to its original state ---
 window.openModal = function(modalId) {
@@ -215,26 +215,24 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollElements.forEach(el => el.classList.add('is-visible'));
     }
     
-    // --- Dual-Function Logo Handler ---
-    const logo = document.querySelector('.logo');
-    if (logo) {
-        let clickCount = 0;
-        let clickTimer = null;
-        logo.addEventListener('click', (e) => {
-            e.preventDefault(); 
-            clickCount++;
-            if (clickTimer) clearTimeout(clickTimer);
-            if (clickCount === 3) {
+    // --- Konami Code Easter Egg for Admin Login ---
+    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    let konamiCodePosition = 0;
+    document.addEventListener('keydown', (e) => {
+        const requiredKey = konamiCode[konamiCodePosition];
+        // Compare the pressed key with the required key in the sequence
+        if (e.key === requiredKey) {
+            konamiCodePosition++;
+            // If the full sequence is entered, trigger the modal and reset
+            if (konamiCodePosition === konamiCode.length) {
                 window.openModal('admin-login-modal');
-                clickCount = 0; 
-            } else {
-                clickTimer = setTimeout(() => {
-                    if (clickCount === 1) window.location.href = logo.href;
-                    clickCount = 0; 
-                }, 300);
+                konamiCodePosition = 0;
             }
-        });
-    }
+        } else {
+            // If the wrong key is pressed, reset the sequence
+            konamiCodePosition = 0;
+        }
+    });
 
     // --- Admin Login Form Handler ---
     const adminLoginForm = document.getElementById('admin-login-form');
