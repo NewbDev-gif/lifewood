@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileNavToggle.addEventListener('click', () => {
             body.classList.toggle('nav-open');
             const isExpanded = mobileNavToggle.getAttribute('aria-expanded') === 'true';
-            mobileNavToggle.setAttribute('aria-expanded', !is_expanded);
+            mobileNavToggle.setAttribute('aria-expanded', !isExpanded);
         });
     }
 
