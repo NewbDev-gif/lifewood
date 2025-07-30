@@ -9,7 +9,7 @@
     <!-- EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
-    <!-- UPDATED: Styles for tabs, responsive table, and NEW Job Management UI -->
+    <!-- Styles for admin page -->
     <style>
         .admin-section {
             background-color: #f9f9f9;
@@ -25,41 +25,12 @@
             padding-bottom: 10px;
         }
         
-        /* NEW: Job Position Management Styles */
-        #position-management-form {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        #new-position-name {
-            flex-grow: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        #positions-list {
-            list-style: none;
-            padding: 0;
-        }
-        #positions-list li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background-color: #fff;
-            border-radius: 4px;
-            margin-bottom: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        #positions-list .delete-position-btn {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
+        /* Job Position Management Styles */
+        #position-management-form { display: flex; gap: 12px; margin-bottom: 20px; }
+        #new-position-name { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        #positions-list { list-style: none; padding: 0; }
+        #positions-list li { display: flex; justify-content: space-between; align-items: center; padding: 12px; background-color: #fff; border-radius: 4px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        #positions-list .delete-position-btn { background-color: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; }
         #positions-list .delete-position-btn:hover { background-color: #c0392b; }
 
         /* Filter Controls for Applications */
@@ -108,7 +79,6 @@
         <section>
             <div class="container">
                 
-                <!-- NEW: Section for Managing Job Positions -->
                 <div class="admin-section">
                     <h2>Manage Job Positions</h2>
                     <form id="position-management-form">
@@ -118,7 +88,6 @@
                     <ul id="positions-list"><p>Loading positions...</p></ul>
                 </div>
 
-                <!-- Section for Viewing Submitted Applications -->
                 <div class="admin-section">
                     <h2>Submitted Applications</h2>
                     <div class="filter-controls">
@@ -144,18 +113,24 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
-        // --- Your Keys and IDs ---
         const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
         const EMAILJS_PASSED_TEMPLATE_ID = 'template_jfzey48';
         const EMAILJS_FAILED_TEMPLATE_ID = 'template_m5sztl8';
         const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
 
-        const firebaseConfig = { /* ... your config ... */ };
+        // THIS IS THE CORRECTED PART
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfeMg7BzcR1UvsZtFv4SQQtfJZWSdsGxY",
+            authDomain: "lifewood-420.firebaseapp.com",
+            projectId: "lifewood-420",
+            storageBucket: "lifewood-420.firebasestorage.app",
+            messagingSenderId: "277748825194",
+            appId: "1:277748825194:web:a39e906c4bdf3417e25e13"
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
-        // DOM Elements
         const applicationsListDiv = document.getElementById('applications-list');
         const positionFilter = document.getElementById('position-filter');
         const positionsListUL = document.getElementById('positions-list');
@@ -165,24 +140,18 @@
         let allApplications = []; 
         let activeTab = 'pending';
         
-        // ===============================================
-        // NEW: JOB POSITION MANAGEMENT LOGIC
-        // ===============================================
+        // JOB POSITION MANAGEMENT LOGIC
         const positionsCollection = collection(db, "positions");
-
         const renderPositions = async () => {
             const querySnapshot = await getDocs(query(positionsCollection, orderBy("name")));
-            positionsListUL.innerHTML = ''; // Clear list
+            positionsListUL.innerHTML = '';
             if (querySnapshot.empty) {
                 positionsListUL.innerHTML = '<p>No job positions added yet.</p>';
                 return;
             }
             querySnapshot.forEach(doc => {
                 const li = document.createElement('li');
-                li.innerHTML = `
-                    <span>${doc.data().name}</span>
-                    <button class="delete-position-btn" data-doc-id="${doc.id}">Delete</button>
-                `;
+                li.innerHTML = `<span>${doc.data().name}</span><button class="delete-position-btn" data-doc-id="${doc.id}">Delete</button>`;
                 positionsListUL.appendChild(li);
             });
         };
@@ -191,13 +160,11 @@
             e.preventDefault();
             const positionName = newPositionInput.value.trim();
             if (!positionName) return;
-            
             newPositionInput.disabled = true;
             await addDoc(positionsCollection, { name: positionName });
-            
             newPositionInput.value = '';
             newPositionInput.disabled = false;
-            await renderPositions(); // Refresh the list
+            await renderPositions();
         });
 
         positionsListUL.addEventListener('click', async (e) => {
@@ -205,48 +172,67 @@
                 const docId = e.target.dataset.docId;
                 if (confirm('Are you sure you want to delete this position?')) {
                     await deleteDoc(doc(db, 'positions', docId));
-                    await renderPositions(); // Refresh the list
+                    await renderPositions();
                 }
             }
         });
 
-
-        // ===============================================
-        // APPLICATION SUBMISSION LOGIC (largely unchanged)
-        // ===============================================
-        async function sendStatusEmail(applicant, status) { /* ... same as before ... */ }
-        function renderTable() { /* ... same as before ... */ }
-        function populatePositionFilter() { /* ... same as before ... */ }
-
+        // APPLICATION SUBMISSION LOGIC
+        async function sendStatusEmail(applicant, status) {
+            const templateId = status === 'Passed' ? EMAILJS_PASSED_TEMPLATE_ID : EMAILJS_FAILED_TEMPLATE_ID;
+            const templateParams = { applicant_name: applicant.name, applicant_position: applicant.position, applicant_email: applicant.email };
+            try {
+                await emailjs.send(EMAILJS_SERVICE_ID, templateId, templateParams);
+                alert(`Email sent successfully to ${applicant.name}!`);
+                return true;
+            } catch (error) {
+                console.error('EmailJS Error:', error);
+                alert(`Failed to send email. Check the console for details.`);
+                return false;
+            }
+        }
+        function renderTable() {
+            let filteredApps = allApplications.filter(app => (activeTab === 'pending' ? app.data.status === 'Pending' : app.data.status !== 'Pending'));
+            if (positionFilter.value !== 'all') {
+                filteredApps = filteredApps.filter(app => app.data.position === positionFilter.value);
+            }
+            if (filteredApps.length === 0) {
+                applicationsListDiv.innerHTML = `<p>No applications found matching the current filters.</p>`;
+                return;
+            }
+            let tableHtml = `<table><thead><tr><th>Name</th><th>Email</th><th>Position</th><th>Links</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
+            filteredApps.forEach(app => {
+                const data = app.data; const docId = app.id; const statusClass = `status-${(data.status || 'pending').toLowerCase()}`;
+                tableHtml += `<tr id="row-${docId}"><td data-label="Name">${data.name||'N/A'}</td><td data-label="Email"><a href="mailto:${data.email}">${data.email||'N/A'}</a></td><td data-label="Position">${data.position||'N/A'}</td><td data-label="Links"><a href="${data.resumeLink}" target="_blank">Resume</a> ${data.portfolioLink?`| <a href="${data.portfolioLink}" target="_blank">Portfolio</a>`:''}</td><td data-label="Status"><strong class="status ${statusClass}">${data.status||'Pending'}</strong></td><td class="action-buttons" data-doc-id="${docId}"><button class="btn-passed" style="display:${data.status==='Pending'?'inline-block':'none'};">Passed</button><button class="btn-failed" style="display:${data.status==='Pending'?'inline-block':'none'};">Failed</button><button class="btn-delete" style="display:${data.status!=='Pending'?'inline-block':'none'};">Delete</button></td></tr>`;
+            });
+            tableHtml += '</tbody></table>';
+            applicationsListDiv.innerHTML = tableHtml;
+        }
+        function populatePositionFilter() {
+            const positions = [...new Set(allApplications.map(app => app.data.position))];
+            positionFilter.innerHTML = '<option value="all">All Positions</option>';
+            positions.sort().forEach(position => {
+                if(position) { const option = document.createElement('option'); option.value = position; option.textContent = position; positionFilter.appendChild(option); }
+            });
+        }
+        
         async function initialFetch() {
             try {
-                // Fetch positions FIRST
                 await renderPositions();
-
-                // Fetch applications
                 const appsCollection = collection(db, "applications");
                 const q = query(appsCollection, orderBy("submittedAt", "desc"));
                 const querySnapshot = await getDocs(q);
                 allApplications = querySnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-                
                 populatePositionFilter();
                 renderTable();
-
             } catch (err) {
                 console.error("Error fetching documents: ", err);
                 applicationsListDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Could not retrieve data.</p>`;
             }
         }
-        
-        // All other event listeners and functions (renderTable, handleUpdate, etc.)
-        // remain the same as the previous version. They are omitted here for brevity
-        // but are present in the full copy-pasteable code block.
-        // ... (The rest of your existing JS for handling applications goes here) ...
-
-        // --- [The rest of your application handling script is here] ---
-        document.querySelectorAll('.tab-btn').forEach(button => { button.addEventListener('click', () => { document.querySelector('.tab-btn.active').classList.remove('active'); button.classList.add('active'); activeTab = button.dataset.tab; renderTable(); }); });
+        document.querySelectorAll('.tab-btn').forEach(button => button.addEventListener('click', () => { document.querySelector('.tab-btn.active').classList.remove('active'); button.classList.add('active'); activeTab = button.dataset.tab; renderTable(); }));
         positionFilter.addEventListener('change', renderTable);
-        applicationsListDiv.addEventListener('click', async (e) => { const button = e.target.closest('button'); if (!button) return; const actionCell = e.target.closest('.action-buttons'); const docId = actionCell.dataset.docId; const appData = allApplications.find(app => app.id === docId)?.data; if (!appData) return; button.disabled = true; const handleUpdate = async (newStatus) => { const emailSent = await sendStatusEmail(appData, newStatus); if (emailSent) { await updateDoc(doc(db, 'applications', docId), { status: newStatus }); const appIndex = allApplications.findIndex(app => app.id === docId); if (appIndex > -1) allApplications[appIndex].data.status = newStatus; renderTable(); } else { button.disabled = false; } }; if (button.matches('.btn-passed')) { await handleUpdate('Passed'); } else if (button.matches('.btn-failed')) { await handleUpdate('Failed'); } else if (button.matches('.btn-delete')) { if (confirm('Are you sure you want to permanently delete this application?')) { allApplications = allApplications.filter(app => app.id !== docId); renderTable(); await deleteDoc(doc(db, 'applications', docId)); } else { button.disabled = false; } } });
+        applicationsListDiv.addEventListener('click', async (e) => { const button = e.target.closest('button'); if (!button) return; const actionCell = e.target.closest('.action-buttons'); const docId = actionCell.dataset.docId; const appData = allApplications.find(app => app.id === docId)?.data; if (!appData) return; button.disabled = true; const handleUpdate = async (newStatus) => { const emailSent = await sendStatusEmail(appData, newStatus); if (emailSent) { await updateDoc(doc(db, 'applications', docId), { status: newStatus }); const appIndex = allApplications.findIndex(app => app.id === docId); if (appIndex > -1) allApplications[appIndex].data.status = newStatus; renderTable(); } else { button.disabled = false; } }; if (button.matches('.btn-passed')) await handleUpdate('Passed'); else if (button.matches('.btn-failed')) await handleUpdate('Failed'); else if (button.matches('.btn-delete')) { if (confirm('Are you sure?')) { allApplications = allApplications.filter(app => app.id !== docId); renderTable(); await deleteDoc(doc(db, 'applications', docId)); } else { button.disabled = false; } } });
         document.getElementById('logout-button').addEventListener('click', () => { sessionStorage.removeItem('lifewood_admin_auth'); window.location.replace('index.html'); });
         emailjs.init(EMAILJS_PUBLIC_KEY);
         initialFetch();
