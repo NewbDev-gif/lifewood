@@ -1,4 +1,4 @@
-// script.js - v13.1 (Final, Complete Version with All Code)
+// script.js - v13.2 (Final, with all fixes including keydown safety check)
 
 // ==================================================
 // ======== 0. FIREBASE SETUP (Module Syntax) =======
@@ -244,11 +244,16 @@ document.addEventListener('DOMContentLoaded', () => {
             konamiPosition = (key === konamiSequence[0]) ? 1 : 0;
         }
     }
+    
+    // CORRECTED: Added a safety check for e.key
     document.addEventListener('keydown', (e) => {
+        if (!e.key) return; // If key is undefined, do nothing.
+        
         let key = e.key.toLowerCase();
         if (key.startsWith('arrow')) { key = key.substring(5); }
         checkKonami(key);
     });
+
     document.addEventListener('touchstart', (e) => {
         touchStartX = e.changedTouches[0].screenX;
         touchStartY = e.changedTouches[0].screenY;
@@ -262,6 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         lastTap = currentTime;
     }, { passive: false });
+
     document.addEventListener('touchend', (e) => {
         const touchEndX = e.changedTouches[0].screenX;
         const touchEndY = e.changedTouches[0].screenY;
