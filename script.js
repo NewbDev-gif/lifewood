@@ -38,7 +38,7 @@ window.openModal = function(modalId) {
         
         modal.classList.remove('is-closing'); // For animations
         modal.style.display = 'flex';
-        body.classList.add('nav-open');
+        body.classList.add('modal-open'); // CHANGED from 'nav-open'
     }
 }
 
@@ -50,11 +50,10 @@ window.closeModal = function(modalId) {
         setTimeout(() => {
             modal.style.display = 'none';
             modal.classList.remove('is-closing');
-            body.classList.remove('nav-open');
+            body.classList.remove('modal-open'); // CHANGED from 'nav-open'
         }, 300); // Match animation duration from style.css
     }
 }
-
 // --- NEW: A dedicated function to handle the form submission logic ---
 function attachFormListener() {
     const applicationForm = document.getElementById('application-form');
