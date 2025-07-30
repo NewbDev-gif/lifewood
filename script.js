@@ -1,4 +1,4 @@
-// script.js - v11 (Final Version with Konami Code and All Text Restored)
+// script.js - v12 (Final Version with Mobile-Compatible Konami Code)
 
 // ==================================================
 // ======== 0. FIREBASE SETUP (Module Syntax) =======
@@ -215,24 +215,73 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollElements.forEach(el => el.classList.add('is-visible'));
     }
     
-    // --- Konami Code Easter Egg for Admin Login ---
-    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-    let konamiCodePosition = 0;
-    document.addEventListener('keydown', (e) => {
-        const requiredKey = konamiCode[konamiCodePosition];
-        // Compare the pressed key with the required key in the sequence
-        if (e.key === requiredKey) {
-            konamiCodePosition++;
-            // If the full sequence is entered, trigger the modal and reset
-            if (konamiCodePosition === konamiCode.length) {
+    // --- Konami Code Easter Egg for Admin Login (DESKTOP & MOBILE COMPATIBLE) ---
+    const konamiSequence = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'b', 'a'];
+    let konamiPosition = 0;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let lastTap = 0;
+
+    // Function to check the sequence and open the modal if complete
+    function checkKonami(key) {
+        if (key === konamiSequence[konamiPosition]) {
+            konamiPosition++;
+            if (konamiPosition === konamiSequence.length) {
                 window.openModal('admin-login-modal');
-                konamiCodePosition = 0;
+                konamiPosition = 0; // Reset for next time
             }
         } else {
-            // If the wrong key is pressed, reset the sequence
-            konamiCodePosition = 0;
+            // If the sequence is wrong, reset it, but check if the current key is the start of the sequence
+            konamiPosition = (key === konamiSequence[0]) ? 1 : 0;
+        }
+    }
+
+    // 1. Listener for Physical Keyboards (Desktop)
+    document.addEventListener('keydown', (e) => {
+        let key = e.key.toLowerCase();
+        if (key.startsWith('arrow')) {
+            key = key.substring(5); // "arrowup" -> "up"
+        }
+        checkKonami(key);
+    });
+
+    // 2. Listener for Touch Gestures (Mobile)
+    document.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+
+        // Detect double-tap for 'b' and 'a'
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+        if (tapLength < 300 && tapLength > 0) {
+            if (konamiSequence[konamiPosition] === 'b' || konamiSequence[konamiPosition] === 'a') {
+                checkKonami(konamiSequence[konamiPosition]);
+            }
+            e.preventDefault(); // Prevent zoom on double-tap
+        }
+        lastTap = currentTime;
+
+    }, { passive: false });
+
+    document.addEventListener('touchend', (e) => {
+        const touchEndX = e.changedTouches[0].screenX;
+        const touchEndY = e.changedTouches[0].screenY;
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+        const minSwipeDistance = 50;
+
+        // Ignore if it's more of a tap than a swipe
+        if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) < minSwipeDistance) {
+            return;
+        }
+
+        if (Math.abs(deltaX) > Math.abs(deltaY)) { // Horizontal swipe
+            checkKonami(deltaX > 0 ? 'right' : 'left');
+        } else { // Vertical swipe
+            checkKonami(deltaY > 0 ? 'down' : 'up');
         }
     });
+
 
     // --- Admin Login Form Handler ---
     const adminLoginForm = document.getElementById('admin-login-form');
