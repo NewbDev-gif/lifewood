@@ -304,46 +304,52 @@
 
         /* --- The Hamburger Toggle Button --- */
         .mobile-nav-toggle {
-            display: block;
-            background: none;
-            border: none;
-            cursor: pointer;
-            z-index: 1001; /* Ensure it's above the nav panel */
-            position: relative; /* For z-index to work */
-        }
-        
-        .hamburger {
-            display: block;
-            width: 25px;
-            height: 2px;
-            background-color: var(--dark-serpent);
-            position: relative;
-            transition: background-color 0.1s 0.2s ease;
-        }
-        
-        .hamburger::before,
-        .hamburger::after {
-            content: '';
-            position: absolute;
-            width: 25px;
-            height: 2px;
-            background-color: var(--dark-serpent);
-            transition: transform 0.3s ease;
-        }
-        
-        .hamburger::before { top: -8px; }
-        .hamburger::after { top: 8px; }
+    display: block;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 1001;
+    position: relative;
+    width: 30px;
+    height: 24px;
+}
 
-        /* --- Animate Hamburger to "X" when body has .nav-open --- */
-        body.nav-open .hamburger {
-            background-color: transparent; /* Center line fades out */
-        }
-        body.nav-open .hamburger::before {
-            transform: translateY(8px) rotate(45deg);
-        }
-        body.nav-open .hamburger::after {
-            transform: translateY(-8px) rotate(-45deg);
-        }
+.hamburger {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--dark-serpent);
+    transform: translateY(-50%);
+    transition: background-color 0.1s 0.2s ease;
+}
+
+.hamburger::before,
+.hamburger::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--dark-serpent);
+    transition: transform 0.3s ease;
+}
+
+.hamburger::before { top: -8px; }
+.hamburger::after { top: 8px; }
+
+body.nav-open .hamburger {
+    background-color: transparent;
+}
+
+body.nav-open .hamburger::before {
+    transform: translateY(8px) rotate(45deg);
+}
+
+body.nav-open .hamburger::after {
+    transform: translateY(-8px) rotate(-45deg);
+}
     }
 
 
