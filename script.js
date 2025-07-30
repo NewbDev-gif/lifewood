@@ -1,10 +1,11 @@
-// script.js - v12 (Final Version with Mobile-Compatible Konami Code)
+// script.js - v13 (Final Version with Dynamic Jobs and All Fixes)
 
 // ==================================================
 // ======== 0. FIREBASE SETUP (Module Syntax) =======
 // ==================================================
+// UPDATED: Added getDocs, query, orderBy to read data from Firestore
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
+import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDfeMg7BzcR1UvsZtFv4SQQtfJZWSdsGxY",
@@ -25,24 +26,25 @@ const db = getFirestore(app);
 const body = document.body;
 let originalModalHTML = ''; // Will be used to store and reset the application form
 
-// --- UPDATED: openModal now resets the form to its original state ---
+// --- UPDATED: openModal now resets the form and uses the correct class ---
 window.openModal = function(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         // If this is the application modal, ensure it's reset to the form
         if (modalId === 'application-modal' && originalModalHTML) {
             modal.querySelector('.modal-content').innerHTML = originalModalHTML;
-            // We need to re-attach the event listener after resetting the HTML
+            // We need to re-attach the event listener and re-populate the dropdown
             attachFormListener(); 
+            populatePositionsDropdown(); // Re-populate positions in the freshly reset form
         }
         
         modal.classList.remove('is-closing'); // For animations
         modal.style.display = 'flex';
-        body.classList.add('modal-open'); // CHANGED from 'nav-open'
+        body.classList.add('modal-open'); // Use dedicated class for modals
     }
 }
 
-// --- UPDATED: closeModal now handles animation ---
+// --- UPDATED: closeModal now handles animation and uses the correct class ---
 window.closeModal = function(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
@@ -50,11 +52,12 @@ window.closeModal = function(modalId) {
         setTimeout(() => {
             modal.style.display = 'none';
             modal.classList.remove('is-closing');
-            body.classList.remove('modal-open'); // CHANGED from 'nav-open'
+            body.classList.remove('modal-open'); // Use dedicated class for modals
         }, 300); // Match animation duration from style.css
     }
 }
-// --- NEW: A dedicated function to handle the form submission logic ---
+
+// --- A dedicated function to handle the form submission logic ---
 function attachFormListener() {
     const applicationForm = document.getElementById('application-form');
     if (applicationForm) {
@@ -77,7 +80,6 @@ function attachFormListener() {
             try {
                 await addDoc(collection(db, "applications"), formData);
                 
-                // --- THIS IS THE NEW "THANK YOU" STATE LOGIC ---
                 const modalContent = document.querySelector('#application-modal .modal-content');
                 const thankYouHTML = `
                     <button class="modal-close" onclick="window.closeModal('application-modal')">×</button>
@@ -105,20 +107,55 @@ function attachFormListener() {
     }
 }
 
+// --- NEW: Function to load job positions into the application form dropdown ---
+async function populatePositionsDropdown() {
+    const positionsCollectionRef = collection(db, "positions");
+    const positionSelect = document.getElementById('app-position');
+    
+    if (!positionSelect) return; // Exit if the dropdown isn't on the current page
+
+    try {
+        const q = query(positionsCollectionRef, orderBy("name")); // Get positions and order them alphabetically
+        const querySnapshot = await getDocs(q);
+
+        // Clear any existing options and add a default one
+        positionSelect.innerHTML = '<option value="" disabled selected>Select a position...</option>';
+
+        if (querySnapshot.empty) {
+            positionSelect.disabled = true;
+            positionSelect.innerHTML = '<option value="" disabled>No open positions at this time.</option>';
+        } else {
+            positionSelect.disabled = false;
+            querySnapshot.forEach((doc) => {
+                const position = doc.data();
+                const option = document.createElement('option');
+                option.value = position.name;
+                option.textContent = position.name;
+                positionSelect.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error("Error fetching job positions: ", error);
+        positionSelect.disabled = true;
+        positionSelect.innerHTML = '<option value="" disabled>Could not load positions.</option>';
+    }
+}
+
 
 // ==================================================
 // === 2. ON-LOAD & DYNAMIC CONTENT LOGIC ===========
 // ==================================================
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- NEW: Store the original HTML of the application modal on page load ---
+    // --- Store the original HTML of the application modal on page load ---
     const applicationModalContent = document.querySelector('#application-modal .modal-content');
     if (applicationModalContent) {
         originalModalHTML = applicationModalContent.innerHTML;
     }
     
-    // Attach the form listener for the first time the page loads
+    // Attach the form listener and populate the dropdown for the first time
     attachFormListener();
+    populatePositionsDropdown(); // Load job positions when page loads
     
     // --- Section: Original UI Enhancements ---
     const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
@@ -221,45 +258,38 @@ document.addEventListener('DOMContentLoaded', () => {
     let touchStartY = 0;
     let lastTap = 0;
 
-    // Function to check the sequence and open the modal if complete
     function checkKonami(key) {
         if (key === konamiSequence[konamiPosition]) {
             konamiPosition++;
             if (konamiPosition === konamiSequence.length) {
                 window.openModal('admin-login-modal');
-                konamiPosition = 0; // Reset for next time
+                konamiPosition = 0;
             }
         } else {
-            // If the sequence is wrong, reset it, but check if the current key is the start of the sequence
             konamiPosition = (key === konamiSequence[0]) ? 1 : 0;
         }
     }
 
-    // 1. Listener for Physical Keyboards (Desktop)
     document.addEventListener('keydown', (e) => {
         let key = e.key.toLowerCase();
         if (key.startsWith('arrow')) {
-            key = key.substring(5); // "arrowup" -> "up"
+            key = key.substring(5);
         }
         checkKonami(key);
     });
 
-    // 2. Listener for Touch Gestures (Mobile)
     document.addEventListener('touchstart', (e) => {
         touchStartX = e.changedTouches[0].screenX;
         touchStartY = e.changedTouches[0].screenY;
-
-        // Detect double-tap for 'b' and 'a'
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTap;
         if (tapLength < 300 && tapLength > 0) {
             if (konamiSequence[konamiPosition] === 'b' || konamiSequence[konamiPosition] === 'a') {
                 checkKonami(konamiSequence[konamiPosition]);
             }
-            e.preventDefault(); // Prevent zoom on double-tap
+            e.preventDefault();
         }
         lastTap = currentTime;
-
     }, { passive: false });
 
     document.addEventListener('touchend', (e) => {
@@ -269,18 +299,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const deltaY = touchEndY - touchStartY;
         const minSwipeDistance = 50;
 
-        // Ignore if it's more of a tap than a swipe
         if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) < minSwipeDistance) {
             return;
         }
 
-        if (Math.abs(deltaX) > Math.abs(deltaY)) { // Horizontal swipe
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
             checkKonami(deltaX > 0 ? 'right' : 'left');
-        } else { // Vertical swipe
+        } else {
             checkKonami(deltaY > 0 ? 'down' : 'up');
         }
     });
-
 
     // --- Admin Login Form Handler ---
     const adminLoginForm = document.getElementById('admin-login-form');
@@ -299,5 +327,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
 });
