@@ -1,9 +1,8 @@
-// script.js - v13 (Final Version with Dynamic Jobs and All Fixes)
+// script.js - v13.1 (Final, Complete Version with All Code)
 
 // ==================================================
 // ======== 0. FIREBASE SETUP (Module Syntax) =======
 // ==================================================
-// UPDATED: Added getDocs, query, orderBy to read data from Firestore
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
@@ -26,25 +25,20 @@ const db = getFirestore(app);
 const body = document.body;
 let originalModalHTML = ''; // Will be used to store and reset the application form
 
-// --- UPDATED: openModal now resets the form and uses the correct class ---
 window.openModal = function(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        // If this is the application modal, ensure it's reset to the form
         if (modalId === 'application-modal' && originalModalHTML) {
             modal.querySelector('.modal-content').innerHTML = originalModalHTML;
-            // We need to re-attach the event listener and re-populate the dropdown
             attachFormListener(); 
-            populatePositionsDropdown(); // Re-populate positions in the freshly reset form
+            populatePositionsDropdown();
         }
-        
-        modal.classList.remove('is-closing'); // For animations
+        modal.classList.remove('is-closing');
         modal.style.display = 'flex';
-        body.classList.add('modal-open'); // Use dedicated class for modals
+        body.classList.add('modal-open');
     }
 }
 
-// --- UPDATED: closeModal now handles animation and uses the correct class ---
 window.closeModal = function(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
@@ -52,12 +46,11 @@ window.closeModal = function(modalId) {
         setTimeout(() => {
             modal.style.display = 'none';
             modal.classList.remove('is-closing');
-            body.classList.remove('modal-open'); // Use dedicated class for modals
-        }, 300); // Match animation duration from style.css
+            body.classList.remove('modal-open');
+        }, 300);
     }
 }
 
-// --- A dedicated function to handle the form submission logic ---
 function attachFormListener() {
     const applicationForm = document.getElementById('application-form');
     if (applicationForm) {
@@ -66,7 +59,6 @@ function attachFormListener() {
             const submitBtn = applicationForm.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
-
             const formData = {
                 name: document.getElementById('app-name').value,
                 email: document.getElementById('app-email').value,
@@ -76,12 +68,10 @@ function attachFormListener() {
                 submittedAt: serverTimestamp(),
                 status: 'Pending'
             };
-
             try {
                 await addDoc(collection(db, "applications"), formData);
-                
                 const modalContent = document.querySelector('#application-modal .modal-content');
-                const thankYouHTML = `
+                modalContent.innerHTML = `
                     <button class="modal-close" onclick="window.closeModal('application-modal')">×</button>
                     <div style="text-align: center; padding: 2rem 0;">
                         <h3>Thank You!</h3>
@@ -90,8 +80,6 @@ function attachFormListener() {
                         <button onclick="window.closeModal('application-modal')" class="btn btn-primary">Close</button>
                     </div>
                 `;
-                modalContent.innerHTML = thankYouHTML;
-
             } catch (error) {
                 console.error("Error adding document: ", error);
                 const feedback = document.getElementById('applicant-form-feedback');
@@ -107,20 +95,14 @@ function attachFormListener() {
     }
 }
 
-// --- NEW: Function to load job positions into the application form dropdown ---
 async function populatePositionsDropdown() {
     const positionsCollectionRef = collection(db, "positions");
     const positionSelect = document.getElementById('app-position');
-    
-    if (!positionSelect) return; // Exit if the dropdown isn't on the current page
-
+    if (!positionSelect) return;
     try {
-        const q = query(positionsCollectionRef, orderBy("name")); // Get positions and order them alphabetically
+        const q = query(positionsCollectionRef, orderBy("name"));
         const querySnapshot = await getDocs(q);
-
-        // Clear any existing options and add a default one
         positionSelect.innerHTML = '<option value="" disabled selected>Select a position...</option>';
-
         if (querySnapshot.empty) {
             positionSelect.disabled = true;
             positionSelect.innerHTML = '<option value="" disabled>No open positions at this time.</option>';
@@ -141,23 +123,17 @@ async function populatePositionsDropdown() {
     }
 }
 
-
 // ==================================================
 // === 2. ON-LOAD & DYNAMIC CONTENT LOGIC ===========
 // ==================================================
 document.addEventListener('DOMContentLoaded', () => {
-
-    // --- Store the original HTML of the application modal on page load ---
     const applicationModalContent = document.querySelector('#application-modal .modal-content');
     if (applicationModalContent) {
         originalModalHTML = applicationModalContent.innerHTML;
     }
-    
-    // Attach the form listener and populate the dropdown for the first time
     attachFormListener();
-    populatePositionsDropdown(); // Load job positions when page loads
-    
-    // --- Section: Original UI Enhancements ---
+    populatePositionsDropdown();
+
     const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
     if (mobileNavToggle) {
         mobileNavToggle.addEventListener('click', () => {
@@ -251,13 +227,12 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollElements.forEach(el => el.classList.add('is-visible'));
     }
     
-    // --- Konami Code Easter Egg for Admin Login (DESKTOP & MOBILE COMPATIBLE) ---
+    // --- Konami Code Easter Egg for Admin Login ---
     const konamiSequence = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'b', 'a'];
     let konamiPosition = 0;
     let touchStartX = 0;
     let touchStartY = 0;
     let lastTap = 0;
-
     function checkKonami(key) {
         if (key === konamiSequence[konamiPosition]) {
             konamiPosition++;
@@ -269,15 +244,11 @@ document.addEventListener('DOMContentLoaded', () => {
             konamiPosition = (key === konamiSequence[0]) ? 1 : 0;
         }
     }
-
     document.addEventListener('keydown', (e) => {
         let key = e.key.toLowerCase();
-        if (key.startsWith('arrow')) {
-            key = key.substring(5);
-        }
+        if (key.startsWith('arrow')) { key = key.substring(5); }
         checkKonami(key);
     });
-
     document.addEventListener('touchstart', (e) => {
         touchStartX = e.changedTouches[0].screenX;
         touchStartY = e.changedTouches[0].screenY;
@@ -291,23 +262,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         lastTap = currentTime;
     }, { passive: false });
-
     document.addEventListener('touchend', (e) => {
         const touchEndX = e.changedTouches[0].screenX;
         const touchEndY = e.changedTouches[0].screenY;
         const deltaX = touchEndX - touchStartX;
         const deltaY = touchEndY - touchStartY;
         const minSwipeDistance = 50;
-
-        if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) < minSwipeDistance) {
-            return;
-        }
-
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-            checkKonami(deltaX > 0 ? 'right' : 'left');
-        } else {
-            checkKonami(deltaY > 0 ? 'down' : 'up');
-        }
+        if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) < minSwipeDistance) { return; }
+        if (Math.abs(deltaX) > Math.abs(deltaY)) { checkKonami(deltaX > 0 ? 'right' : 'left'); } 
+        else { checkKonami(deltaY > 0 ? 'down' : 'up'); }
     });
 
     // --- Admin Login Form Handler ---
@@ -318,7 +281,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = document.getElementById('admin-email').value;
             const password = document.getElementById('admin-password').value;
             const errorMsg = document.getElementById('admin-login-error');
-
             if (email === 'admin@lifewood.com' && password === 'secret123') {
                 sessionStorage.setItem('lifewood_admin_auth', 'true');
                 window.location.href = 'admin.html';
