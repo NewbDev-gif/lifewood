@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileNavToggle.addEventListener('click', () => {
             body.classList.toggle('nav-open');
             const isExpanded = mobileNavToggle.getAttribute('aria-expanded') === 'true';
-            mobileNavToggle.setAttribute('aria-expanded', !isExpanded);
+            mobileNavToggle.setAttribute('aria-expanded', !is_expanded);
         });
     }
 
@@ -247,10 +247,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // CORRECTED: Added a safety check for e.key
     document.addEventListener('keydown', (e) => {
-        if (!e.key) return; // If key is undefined, do nothing.
+        if (!e.key) {
+            return; // If key is undefined, do nothing.
+        }
         
         let key = e.key.toLowerCase();
-        if (key.startsWith('arrow')) { key = key.substring(5); }
+        if (key.startsWith('arrow')) { 
+            key = key.substring(5); 
+        }
         checkKonami(key);
     });
 
