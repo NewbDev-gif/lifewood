@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Lifewood - Let's Connect</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+
+    <!-- Icon for Apple devices -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon.png">
+
+    <!-- Icon for Android/Chrome -->
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body id="page-contact">
+
+<header class="main-header">
+    <div class="container">
+        <a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-icon" /><div class="logo-text-stack"><span class="logo-text">lifewood</span></div></a>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="solutions.html" data-key="nav-solutions">Solutions</a></li>
+                <li><a href="about.html" data-key="nav-about">About Us</a></li>
+                <li><a href="services.html" data-key="nav-services">Services</a></li>
+                <li class="mobile-only-cta"><a href="contact.html" class="btn btn-primary" data-key="nav-contact">Contact Us</a></li>
+            </ul>
+        </nav>
+        <div class="header-controls">
+            <button class="lang-switcher-btn">中文</button>
+            <a href="contact.html" class="btn btn-primary nav-cta" data-key="nav-contact">Contact Us</a>
+            <button class="mobile-nav-toggle" aria-expanded="false"><span class="hamburger"></span></button>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="hero-contact">
+        <div class="container hero-content-centered">
+            <h1 class="animate-on-load" data-delay="100" data-key="hero-title">Let's Connect.</h1>
+            <p class="animate-on-load" data-delay="200" data-key="hero-subtitle">Whether you have a specific project in mind or want to learn more about our approach, we're ready to talk.</p>
+        </div>
+    </section>
+
+    <section class="contact-section">
+        <div class="container">
+            <div class="grid-2-contact">
+                <div class="contact-form-wrapper animate-on-scroll">
+                    <h2 data-key="form-title">Send Us a Message</h2>
+                    <form class="contact-form">
+                        <div class="form-group"><label for="name" data-key="form-name">Full Name*</label><input type="text" id="name" name="name" required aria-required="true"></div>
+                        <div class="form-group"><label for="email" data-key="form-email">Work Email*</label><input type="email" id="email" name="email" required aria-required="true"></div>
+                        <div class="form-group"><label for="company" data-key="form-company">Company Name</label><input type="text" id="company" name="company"></div>
+                        <div class="form-group"><label for="message" data-key="form-help">How can we help?*</label><textarea id="message" name="message" rows="5" required aria-required="true"></textarea></div>
+                        <button type="submit" class="btn btn-primary btn-full" data-key="form-button">Send Message</button>
+                    </form>
+                </div>
+                <div class="contact-details-wrapper animate-on-scroll" data-delay="200">
+                    <h3 data-key="details-title">Our Offices</h3>
+                    <div class="office-block"><div class="office-icon"></div><div class="office-info"><h4 data-key="details-office1-name">Lifewood Cebu</h4><p>i2 Building, Jose Maria del Mar St, Cebu City <br>6000 Cebu, Philippines</p><a href="mailto:emailhere@lifewood.com">emailhere@lifewood.com</a></div></div>
+                    <div class="office-block"><div class="office-icon"></div><div class="office-info"><h4 data-key="details-office2-name">Lifewood Legazpi</h4><p>Tagas, Daraga, Albay 4501<br>Daraga, Philippines</p><a href="mailto:emailhere@lifewood.com">emailhere@lifewood.com</a></div></div>
+                    <div class="map-placeholder"><img src="map.png" alt="A map showing locations of Lifewood offices in Cebu and Legazpi."></div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+    
+<footer class="main-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col"><a href="index.html" class="logo-white"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-footer-icon">lifewood</a><p data-key="footer-motto">Bridging cultures through technology.</p></div>
+            <div class="footer-col"><h4 data-key="footer-nav-title">Navigate</h4><ul><li><a href="index.html" data-key="footer-nav-home">Home</a></li><li><a href="solutions.html" data-key="footer-nav-solutions">Solutions</a></li><li><a href="about.html" data-key="footer-nav-about">About Us</a></li><li><a href="services.html" data-key="footer-nav-services">Services</a></li></ul></div>
+            <div class="footer-col"><h4 data-key="footer-solutions-title">Solutions</h4><ul><li><a href="solutions.html" data-key="footer-solutions-talent">Customer Data Platform</a></li></ul></div>
+            <div class="footer-col"><h4 data-key="footer-follow-title">Follow Us</h4><ul><li><a href="https://ph.linkedin.com/company/lifewood-data-technology-ltd." target="_blank" rel="noopener noreferrer">LinkedIn</a></li><li><a href="https://www.youtube.com/@LifewoodDataTechnology/videos" target="_blank" rel="noopener noreferrer">Youtube</a></li></ul></div>
+        </div>
+        <div class="footer-bottom"><p data-key="footer-copyright">© 2025 Lifewood. All rights reserved.</p><button class="lang-switcher-btn">中文</button></div>
+    </div>
+</footer>
+<script type="module" src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js"></script>
+
+<!-- Your script must also be a module now -->
+<script type="module" src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Services Offered - Lifewood</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+
+    <!-- Icon for Apple devices -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon.png">
+
+    <!-- Icon for Android/Chrome -->
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body id="page-services">
+
+<header class="main-header">
+    <div class="container">
+        <a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-icon" /><div class="logo-text-stack"><span class="logo-text">lifewood</span></div></a>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="solutions.html" data-key="nav-solutions">Solutions</a></li>
+                <li><a href="about.html" data-key="nav-about">About Us</a></li>
+                <li><a href="services.html" data-key="nav-services">Services</a></li>
+                <li class="mobile-only-cta"><a href="contact.html" class="btn btn-primary" data-key="nav-contact">Contact Us</a></li>
+            </ul>
+        </nav>
+        <div class="header-controls">
+            <button class="lang-switcher-btn">中文</button>
+            <a href="contact.html" class="btn btn-primary nav-cta" data-key="nav-contact">Contact Us</a>
+            <button class="mobile-nav-toggle" aria-expanded="false"><span class="hamburger"></span></button>
+        </div>
+    </div>
+</header>
+
+<main>
+  <section class="hero-insights">
+    <div class="container text-center">
+      <h1 class="animate-on-load" data-delay="100" data-key="hero-title">Services Offered</h1>
+      <p class="section-subtitle animate-on-load" data-delay="200" data-key="hero-subtitle">Explore our latest services tailored for global success.</p>
+    </div>
+  </section>
+
+  <section class="services-section">
+    <div class="container">
+      <div class="filter-bar animate-on-scroll">
+          <button class="filter-btn active" data-key="filter-all">All Services</button>
+          <button class="filter-btn" data-key="filter-pa">Predictive Analytics</button>
+          <button class="filter-btn" data-key="filter-nlp">NLP</button>
+          <button class="filter-btn" data-key="filter-de">Data Engineering</button>
+      </div>
+
+      <div class="grid-3">
+        <div class="card service-card animate-on-scroll" data-delay="100"><img src="service.png" alt="Abstract data visualization for predictive analytics." class="card-img"><div class="card-content"><h4 data-key="card1-title">Predictive Analytics</h4><p data-key="card1-text">Using machine learning models to forecast trends and behaviors. This is great for finance, retail, or healthcare clients.</p></div></div>
+        <div class="card service-card animate-on-scroll" data-delay="200"><img src="service2.png" alt="Illustration of a chatbot conversation for NLP." class="card-img"><div class="card-content"><h4 data-key="card2-title">Natural Language Processing (NLP)</h4><p data-key="card2-text">Create chatbots, sentiment analysis tools, and text summarizers for client-facing applications.</p></div></div>
+        <div class="card service-card animate-on-scroll" data-delay="300"><img src="service3.png" alt="Diagram of a data pipeline for data engineering." class="card-img"><div class="card-content"><h4 data-key="card3-title">Data Engineering Solutions</h4><p data-key="card3-text">Architect scalable data systems using tools like Apache Spark, Hadoop, and SQL-based orchestration.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="newsletter-cta">
+    <div class="container grid-2">
+      <div class="animate-on-scroll"><h2 data-key="cta-title">Stay Ahead of the Curve.</h2><p data-key="cta-text">Get the latest Lifewood insights delivered directly to your inbox.</p></div>
+      <form class="newsletter-form animate-on-scroll" data-delay="100">
+        <input type="email" placeholder="Enter your email address" required aria-required="true">
+        <button type="submit" class="btn btn-primary" data-key="cta-button">Subscribe</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="main-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col"><a href="index.html" class="logo-white"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-footer-icon">lifewood</a><p data-key="footer-motto">Bridging cultures through technology.</p></div>
+            <div class="footer-col"><h4 data-key="footer-nav-title">Navigate</h4><ul><li><a href="index.html" data-key="footer-nav-home">Home</a></li><li><a href="solutions.html" data-key="footer-nav-solutions">Solutions</a></li><li><a href="about.html" data-key="footer-nav-about">About Us</a></li><li><a href="services.html" data-key="footer-nav-services">Services</a></li></ul></div>
+            <div class="footer-col"><h4 data-key="footer-solutions-title">Solutions</h4><ul><li><a href="solutions.html" data-key="footer-solutions-talent">Customer Data Platform</a></li></ul></div>
+            <div class="footer-col"><h4 data-key="footer-follow-title">Follow Us</h4><ul><li><a href="https://ph.linkedin.com/company/lifewood-data-technology-ltd." target="_blank" rel="noopener noreferrer">LinkedIn</a></li><li><a href="https://www.youtube.com/@LifewoodDataTechnology/videos" target="_blank" rel="noopener noreferrer">Youtube</a></li></ul></div>
+        </div>
+        <div class="footer-bottom"><p data-key="footer-copyright">© 2025 Lifewood. All rights reserved.</p><button class="lang-switcher-btn">中文</button></div>
+    </div>
+</footer>
+
+<script type="module" src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js"></script>
+
+<!-- Your script must also be a module now -->
+<script type="module" src="script.js"></script>
+</body>
+</html>

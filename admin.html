@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Lifewood</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <!-- UPDATED: Styles for tabs and NEW responsive table -->
+    <style>
+        .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 24px; }
+        .tab-btn { padding: 12px 20px; font-size: 1rem; font-weight: 600; cursor: pointer; background: none; border: none; border-bottom: 3px solid transparent; color: #888; transition: all 0.3s ease; }
+        .tab-btn.active { color: var(--dark-serpent); border-bottom-color: var(--saffaron); }
+        .action-buttons button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; border-radius: 4px; }
+        .btn-passed { background-color: #28a745; color: white; border: 1px solid #28a745; }
+        .btn-failed { background-color: #dc3545; color: white; border: 1px solid #dc3545; }
+        .btn-delete { background-color: #6c757d; color: white; border: 1px solid #6c757d; }
+        .status { font-weight: bold; }
+        .status-passed { color: #28a745; }
+        .status-failed { color: #dc3545; }
+        .status-pending { color: #6c757d; }
+
+        /* --- NEW: Responsive Card Styles for Mobile --- */
+        @media (max-width: 768px) {
+            #page-admin table {
+                border: 0;
+            }
+            #page-admin table thead {
+                display: none; /* Hide desktop headers */
+            }
+            #page-admin table tr {
+                display: block;
+                margin-bottom: 1.5rem;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                padding: 1rem;
+            }
+            #page-admin table td {
+                display: flex; /* Use flexbox for alignment */
+                justify-content: space-between; /* Pushes label and data apart */
+                align-items: center;
+                text-align: right;
+                border-bottom: 1px dotted #eee;
+                padding: 0.75rem 0.5rem;
+            }
+            #page-admin table td:last-child {
+                border-bottom: none; /* No line for the last cell (buttons) */
+            }
+            /* Use the data-label from the HTML to create a label */
+            #page-admin table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                text-align: left;
+                padding-right: 1rem;
+                color: var(--dark-serpent);
+            }
+            /* Center the action buttons on mobile */
+            #page-admin table td.action-buttons {
+                justify-content: center;
+                padding-top: 1rem;
+            }
+            #page-admin table td.action-buttons::before {
+                display: none; /* Don't show a label for the buttons */
+            }
+        }
+    </style>
+    <script>
+        if (sessionStorage.getItem('lifewood_admin_auth') !== 'true') {
+            window.location.replace('index.html');
+        }
+    </script>
+</head>
+<body id="page-admin">
+
+    <header class="main-header">
+        <div class="container">
+            <a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-icon" /><div class="logo-text-stack"><span class="logo-text">lifewood</span></div></a>
+            <button id="logout-button" class="btn">Logout</button>
+        </div>
+    </header>
+
+    <main>
+        <section>
+            <div class="container">
+                <h1>Submitted Applications</h1>
+                
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="pending">Pending</button>
+                    <button class="tab-btn" data-tab="processed">Processed</button>
+                </div>
+                
+                <div id="applications-list">
+                    <p>Loading applications...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
+
+        // --- Your Keys and IDs ---
+        const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
+        const EMAILJS_PASSED_TEMPLATE_ID = 'template_jfzey48';
+        const EMAILJS_FAILED_TEMPLATE_ID = 'template_m5sztl8';
+        const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfeMg7BzcR1UvsZtFv4SQQtfJZWSdsGxY",
+            authDomain: "lifewood-420.firebaseapp.com",
+            projectId: "lifewood-420",
+            storageBucket: "lifewood-420.firebasestorage.app",
+            messagingSenderId: "277748825194",
+            appId: "1:277748825194:web:a39e906c4bdf3417e25e13"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const applicationsListDiv = document.getElementById('applications-list');
+        
+        let allApplications = []; 
+        let activeTab = 'pending';
+
+        async function sendStatusEmail(applicant, status) {
+            const templateId = status === 'Passed' ? EMAILJS_PASSED_TEMPLATE_ID : EMAILJS_FAILED_TEMPLATE_ID;
+            const templateParams = {
+                applicant_name: applicant.name,
+                applicant_position: applicant.position,
+                applicant_email: applicant.email
+            };
+            try {
+                await emailjs.send(EMAILJS_SERVICE_ID, templateId, templateParams);
+                alert(`Email sent successfully to ${applicant.name}!`);
+                return true;
+            } catch (error) {
+                console.error('EmailJS Error:', error);
+                alert(`Failed to send email. Check the console for details.`);
+                return false;
+            }
+        }
+
+        function renderTable() {
+            const filteredApps = allApplications.filter(app => {
+                if (activeTab === 'pending') return app.data.status === 'Pending';
+                if (activeTab === 'processed') return app.data.status !== 'Pending';
+            });
+
+            if (filteredApps.length === 0) {
+                applicationsListDiv.innerHTML = `<p>No ${activeTab} applications found.</p>`;
+                return;
+            }
+            let tableHtml = `<table><thead><tr><th>Name</th><th>Email</th><th>Position</th><th>Links</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
+            filteredApps.forEach(app => {
+                const data = app.data;
+                const docId = app.id;
+                const statusClass = `status-${(data.status || 'pending').toLowerCase()}`;
+                tableHtml += `
+                    <tr id="row-${docId}">
+                        <td data-label="Name">${data.name || 'N/A'}</td>
+                        <td data-label="Email"><a href="mailto:${data.email}">${data.email || 'N/A'}</a></td>
+                        <td data-label="Position">${data.position || 'N/A'}</td>
+                        <td data-label="Links">
+                            <a href="${data.resumeLink}" target="_blank" rel="noopener noreferrer">Resume</a>
+                            ${data.portfolioLink ? `| <a href="${data.portfolioLink}" target="_blank" rel="noopener noreferrer">Portfolio</a>` : ''}
+                        </td>
+                        <td data-label="Status"><strong class="status ${statusClass}">${data.status || 'Pending'}</strong></td>
+                        <td class="action-buttons" data-doc-id="${docId}">
+                            <button class="btn-passed" style="display: ${data.status === 'Pending' ? 'inline-block' : 'none'};">Passed</button>
+                            <button class="btn-failed" style="display: ${data.status === 'Pending' ? 'inline-block' : 'none'};">Failed</button>
+                            <button class="btn-delete" style="display: ${data.status !== 'Pending' ? 'inline-block' : 'none'};">Delete</button>
+                        </td>
+                    </tr>`;
+            });
+            tableHtml += '</tbody></table>';
+            applicationsListDiv.innerHTML = tableHtml;
+        }
+        
+        async function initialFetch() {
+            try {
+                const appsCollection = collection(db, "applications");
+                const q = query(appsCollection, orderBy("submittedAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                allApplications = querySnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+                renderTable();
+            } catch (err) {
+                console.error("Error fetching documents: ", err);
+                applicationsListDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Could not retrieve applications.</p>`;
+            }
+        }
+
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelector('.tab-btn.active').classList.remove('active');
+                button.classList.add('active');
+                activeTab = button.dataset.tab;
+                renderTable();
+            });
+        });
+
+        applicationsListDiv.addEventListener('click', async (e) => {
+            const button = e.target.closest('button');
+            if (!button) return;
+            const actionCell = e.target.closest('.action-buttons');
+            const docId = actionCell.dataset.docId;
+            const appData = allApplications.find(app => app.id === docId)?.data;
+            if (!appData) return;
+            button.disabled = true;
+
+            const handleUpdate = async (newStatus) => {
+                const emailSent = await sendStatusEmail(appData, newStatus);
+                if (emailSent) {
+                    await updateDoc(doc(db, 'applications', docId), { status: newStatus });
+                    const appIndex = allApplications.findIndex(app => app.id === docId);
+                    if (appIndex > -1) allApplications[appIndex].data.status = newStatus;
+                    renderTable();
+                } else {
+                    button.disabled = false;
+                }
+            };
+
+            if (button.matches('.btn-passed')) {
+                await handleUpdate('Passed');
+            } else if (button.matches('.btn-failed')) {
+                await handleUpdate('Failed');
+            } else if (button.matches('.btn-delete')) {
+                if (confirm('Are you sure you want to permanently delete this application?')) {
+                    allApplications = allApplications.filter(app => app.id !== docId);
+                    renderTable();
+                    await deleteDoc(doc(db, 'applications', docId));
+                } else {
+                    button.disabled = false;
+                }
+            }
+        });
+        
+        document.getElementById('logout-button').addEventListener('click', () => {
+            sessionStorage.removeItem('lifewood_admin_auth');
+            window.location.replace('index.html');
+        });
+
+        emailjs.init(EMAILJS_PUBLIC_KEY);
+        initialFetch();
+    </script>
+</body>
+</html>
