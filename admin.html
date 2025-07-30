@@ -9,9 +9,30 @@
     <!-- EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
-    <!-- UPDATED: Styles for tabs and NEW responsive table -->
+    <!-- UPDATED: Styles for tabs, responsive table, and NEW filter controls -->
     <style>
-        .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 24px; }
+        .filter-controls {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap; /* Allows filters to wrap on small screens */
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        /* NEW: Style for the position filter dropdown */
+        .position-filter-container label {
+            font-weight: 600;
+            margin-right: 8px;
+            color: #555;
+        }
+        #position-filter {
+            padding: 8px 12px;
+            font-size: 0.95rem;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .tabs { display: flex; border-bottom: 2px solid #eee; }
         .tab-btn { padding: 12px 20px; font-size: 1rem; font-weight: 600; cursor: pointer; background: none; border: none; border-bottom: 3px solid transparent; color: #888; transition: all 0.3s ease; }
         .tab-btn.active { color: var(--dark-serpent); border-bottom-color: var(--saffaron); }
         .action-buttons button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; border-radius: 4px; }
@@ -23,14 +44,10 @@
         .status-failed { color: #dc3545; }
         .status-pending { color: #6c757d; }
 
-        /* --- NEW: Responsive Card Styles for Mobile --- */
+        /* --- Responsive Card Styles for Mobile --- */
         @media (max-width: 768px) {
-            #page-admin table {
-                border: 0;
-            }
-            #page-admin table thead {
-                display: none; /* Hide desktop headers */
-            }
+            #page-admin table { border: 0; }
+            #page-admin table thead { display: none; }
             #page-admin table tr {
                 display: block;
                 margin-bottom: 1.5rem;
@@ -40,17 +57,14 @@
                 padding: 1rem;
             }
             #page-admin table td {
-                display: flex; /* Use flexbox for alignment */
-                justify-content: space-between; /* Pushes label and data apart */
+                display: flex;
+                justify-content: space-between;
                 align-items: center;
                 text-align: right;
                 border-bottom: 1px dotted #eee;
                 padding: 0.75rem 0.5rem;
             }
-            #page-admin table td:last-child {
-                border-bottom: none; /* No line for the last cell (buttons) */
-            }
-            /* Use the data-label from the HTML to create a label */
+            #page-admin table td:last-child { border-bottom: none; }
             #page-admin table td::before {
                 content: attr(data-label);
                 font-weight: 600;
@@ -58,14 +72,8 @@
                 padding-right: 1rem;
                 color: var(--dark-serpent);
             }
-            /* Center the action buttons on mobile */
-            #page-admin table td.action-buttons {
-                justify-content: center;
-                padding-top: 1rem;
-            }
-            #page-admin table td.action-buttons::before {
-                display: none; /* Don't show a label for the buttons */
-            }
+            #page-admin table td.action-buttons { justify-content: center; padding-top: 1rem; }
+            #page-admin table td.action-buttons::before { display: none; }
         }
     </style>
     <script>
@@ -88,9 +96,18 @@
             <div class="container">
                 <h1>Submitted Applications</h1>
                 
-                <div class="tabs">
-                    <button class="tab-btn active" data-tab="pending">Pending</button>
-                    <button class="tab-btn" data-tab="processed">Processed</button>
+                <!-- NEW: Filter controls container -->
+                <div class="filter-controls">
+                    <div class="position-filter-container">
+                        <label for="position-filter">Filter by Position:</label>
+                        <select id="position-filter">
+                            <option value="all">All Positions</option>
+                        </select>
+                    </div>
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="pending">Pending</button>
+                        <button class="tab-btn" data-tab="processed">Processed</button>
+                    </div>
                 </div>
                 
                 <div id="applications-list">
@@ -122,6 +139,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const applicationsListDiv = document.getElementById('applications-list');
+        const positionFilter = document.getElementById('position-filter'); // NEW
         
         let allApplications = []; 
         let activeTab = 'pending';
@@ -143,15 +161,25 @@
                 return false;
             }
         }
-
+        
+        // MODIFIED: This function is now more powerful
         function renderTable() {
-            const filteredApps = allApplications.filter(app => {
+            let filteredApps = allApplications;
+            const selectedPosition = positionFilter.value;
+
+            // 1. Filter by Status (the active tab)
+            filteredApps = filteredApps.filter(app => {
                 if (activeTab === 'pending') return app.data.status === 'Pending';
                 if (activeTab === 'processed') return app.data.status !== 'Pending';
             });
 
+            // 2. Filter by selected Position (if not 'all')
+            if (selectedPosition !== 'all') {
+                filteredApps = filteredApps.filter(app => app.data.position === selectedPosition);
+            }
+
             if (filteredApps.length === 0) {
-                applicationsListDiv.innerHTML = `<p>No ${activeTab} applications found.</p>`;
+                applicationsListDiv.innerHTML = `<p>No applications found matching the current filters.</p>`;
                 return;
             }
             let tableHtml = `<table><thead><tr><th>Name</th><th>Email</th><th>Position</th><th>Links</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
@@ -179,6 +207,20 @@
             tableHtml += '</tbody></table>';
             applicationsListDiv.innerHTML = tableHtml;
         }
+
+        // NEW: This function populates the dropdown
+        function populatePositionFilter() {
+            const positions = [...new Set(allApplications.map(app => app.data.position))];
+            positions.sort(); // Sort alphabetically
+            positions.forEach(position => {
+                if(position) { // Make sure not to add an empty option
+                    const option = document.createElement('option');
+                    option.value = position;
+                    option.textContent = position;
+                    positionFilter.appendChild(option);
+                }
+            });
+        }
         
         async function initialFetch() {
             try {
@@ -186,7 +228,10 @@
                 const q = query(appsCollection, orderBy("submittedAt", "desc"));
                 const querySnapshot = await getDocs(q);
                 allApplications = querySnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-                renderTable();
+                
+                populatePositionFilter(); // NEW: Call the function to fill the dropdown
+                renderTable(); // Initial render
+
             } catch (err) {
                 console.error("Error fetching documents: ", err);
                 applicationsListDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Could not retrieve applications.</p>`;
@@ -198,9 +243,12 @@
                 document.querySelector('.tab-btn.active').classList.remove('active');
                 button.classList.add('active');
                 activeTab = button.dataset.tab;
-                renderTable();
+                renderTable(); // Re-render the table when tab changes
             });
         });
+
+        // NEW: Add event listener for the dropdown
+        positionFilter.addEventListener('change', renderTable);
 
         applicationsListDiv.addEventListener('click', async (e) => {
             const button = e.target.closest('button');
