@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Lifewood</title>
     <link rel="stylesheet" href="style.css">
     
@@ -28,22 +28,17 @@
 
         .admin-section { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 24px; margin-bottom: 40px; }
         .admin-section h2 { margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        
-        /* ADJUSTED: Spacing for the button inside the section */
         .page-actions { margin-bottom: 24px; }
-
         .modal-form-grid { display: grid; gap: 16px; }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #555; }
         .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
-        
         #position-management-form { display: flex; gap: 12px; margin-bottom: 20px; }
         #new-position-name { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
         #positions-list { display: flex; flex-wrap: wrap; gap: 10px; padding: 0; list-style: none; min-height: 38px; }
         .position-tag { display: inline-flex; align-items: center; background-color: #e0e0e0; color: #333; padding: 6px 12px; border-radius: 16px; font-size: 0.9rem; font-weight: 500; }
         .delete-position-btn { background: #888; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 14px; font-weight: bold; line-height: 20px; text-align: center; cursor: pointer; margin-left: 8px; transition: background-color 0.2s; }
         .delete-position-btn:hover { background: #c0392b; }
-
         .filter-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 24px; margin-bottom: 24px; }
         .position-filter-container label { font-weight: 600; margin-right: 8px; }
         #position-filter { padding: 8px 12px; font-size: 0.95rem; border-radius: 6px; border: 1px solid #ccc; }
@@ -51,16 +46,24 @@
         .tab-btn { padding: 12px 20px; font-size: 1rem; font-weight: 600; cursor: pointer; background: none; border: none; border-bottom: 3px solid transparent; color: #888; }
         .tab-btn.active { color: var(--dark-serpent); border-bottom-color: var(--saffaron); }
         .action-buttons button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; border-radius: 4px; }
-        .btn-passed, .btn-schedule { background-color: #28a745; color: white; border: 1px solid #28a745; }
+        .btn-passed { background-color: #28a745; color: white; border: 1px solid #28a745; }
         .btn-failed { background-color: #dc3545; color: white; border: 1px solid #dc3545; }
         .btn-delete { background-color: #6c757d; color: white; border: 1px solid #6c757d; }
         .status { font-weight: bold; }
-        .status-passed { color: #28a745; }
-        .status-failed { color: #dc3545; }
         .status-pending { color: #6c757d; }
-        .status-scheduled { color: #8e44ad; } 
+        .status-scheduled { color: #8e44ad; }
+        .status-failed { color: #dc3545; }
 
-        @media (max-width: 768px) { /* ... same as before ... */ }
+        @media (max-width: 768px) {
+            #page-admin table { border: 0; }
+            #page-admin table thead { display: none; }
+            #page-admin table tr { display: block; margin-bottom: 1.5rem; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); padding: 1rem; }
+            #page-admin table td { display: flex; justify-content: space-between; align-items: center; text-align: right; border-bottom: 1px dotted #eee; padding: 0.75rem 0.5rem; }
+            #page-admin table td:last-child { border-bottom: none; }
+            #page-admin table td::before { content: attr(data-label); font-weight: 600; text-align: left; padding-right: 1rem; color: var(--dark-serpent); }
+            #page-admin table td.action-buttons { justify-content: center; padding-top: 1rem; }
+            #page-admin table td.action-buttons::before { display: none; }
+        }
     </style>
     <script>
         if (sessionStorage.getItem('lifewood_admin_auth') !== 'true') {
@@ -83,18 +86,17 @@
         </div>
     </div>
 
-    <!-- MODAL for Scheduling Interview -->
+    <!-- REFINED MODAL for Scheduling Interview -->
     <div class="modal" id="schedule-modal" style="display:none;">
         <div class="modal-content">
             <button class="modal-close" onclick="window.closeModal('schedule-modal')">×</button>
-            <h2>Schedule Interview</h2>
+            <h2>Schedule Face-to-Face Interview</h2>
             <form id="schedule-form" class="modal-form-grid">
                 <input type="hidden" id="schedule-doc-id">
                 <div class="form-group"><label for="schedule-date">Interview Date</label><input type="date" id="schedule-date" required></div>
                 <div class="form-group"><label for="schedule-time">Interview Time</label><input type="time" id="schedule-time" required></div>
-                <div class="form-group"><label for="schedule-mode">Interview Mode</label><select id="schedule-mode" required><option value="Face-to-Face">Face-to-Face</option><option value="Online">Online</option></select></div>
-                <div class="form-group"><label for="schedule-location">Location / Instructions</label><select id="schedule-location" required><option value="Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug">Cebu IT Park Office</option><option value="An online meeting link will be sent separately.">Online Meeting</option></select></div>
-                <button type="submit" class="btn btn-primary btn-schedule">Send Invitation</button>
+                <p style="font-size: 0.9rem; color: #555; margin: 0;">The location will be set to the Cebu IT Park office.</p>
+                <button type="submit" class="btn btn-primary">Send Invitation</button>
             </form>
         </div>
     </div>
@@ -109,12 +111,10 @@
     <main>
         <section>
             <div class="container">
-                <!-- MOVED: Button is now inside the admin-section -->
                 <div class="admin-section">
                     <div class="page-actions">
                         <button id="manage-positions-btn" class="btn btn-primary">Manage Job Positions</button>
                     </div>
-
                     <h2>Submitted Applications</h2>
                     <div class="filter-controls">
                         <div class="position-filter-container"><label for="position-filter">Filter by Position:</label><select id="position-filter"><option value="all">All Positions</option></select></div>
@@ -212,11 +212,15 @@
                     const date = new Date(data.interviewDate + 'T00:00:00');
                     statusHtml += `<br><small>${date.toLocaleDateString()} @ ${data.interviewTime}</small>`;
                 }
-                tableHtml += `<tr id="row-${docId}"><td data-label="Name">${data.name||'N/A'}</td><td data-label="Email"><a href="mailto:${data.email}">${data.email||'N/A'}</a></td><td data-label="Position">${data.position||'N/A'}</td><td data-label="Links"><a href="${data.resumeLink}" target="_blank">Resume</a> ${data.portfolioLink?`| <a href="${data.portfolioLink}" target="_blank">Portfolio</a>`:''}</td><td data-label="Status">${statusHtml}</td><td class="action-buttons" data-doc-id="${docId}">
-                    <button class="btn-passed" style="display:${data.status==='Pending'?'inline-block':'none'};">Schedule</button>
-                    <button class="btn-failed" style="display:${data.status==='Pending'?'inline-block':'none'};">Fail</button>
-                    <button class="btn-delete" style="display:${data.status!=='Pending'?'inline-block':'none'};">Delete</button>
-                </td></tr>`;
+                let actionButtonsHtml = '';
+                if (data.status === 'Pending') {
+                    actionButtonsHtml = `
+                        <button class="btn-passed">Pass & Schedule</button>
+                        <button class="btn-failed">Fail</button>`;
+                } else {
+                    actionButtonsHtml = `<button class="btn-delete">Delete</button>`;
+                }
+                tableHtml += `<tr id="row-${docId}"><td data-label="Name">${data.name||'N/A'}</td><td data-label="Email"><a href="mailto:${data.email}">${data.email||'N/A'}</a></td><td data-label="Position">${data.position||'N/A'}</td><td data-label="Links"><a href="${data.resumeLink}" target="_blank">Resume</a> ${data.portfolioLink?`| <a href="${data.portfolioLink}" target="_blank">Portfolio</a>`:''}</td><td data-label="Status">${statusHtml}</td><td class="action-buttons" data-doc-id="${docId}">${actionButtonsHtml}</td></tr>`;
             });
             applicationsListDiv.innerHTML = tableHtml + '</tbody></table>';
         }
@@ -276,7 +280,7 @@
                 document.getElementById('schedule-doc-id').value = docId;
                 window.openModal('schedule-modal');
             } else if (button.matches('.btn-failed')) {
-                if (!confirm(`This will mark ${appData.name} as failed. Are you sure?`)) return;
+                if (!confirm(`This will mark ${appData.name} as Failed. Are you sure?`)) return;
                 button.disabled = true;
                 await updateDoc(doc(db, 'applications', docId), { status: 'Failed' });
                 const appIndex = allApplications.findIndex(app => app.id === docId);
@@ -306,8 +310,8 @@
             const interviewDetails = {
                 interview_date: new Date(document.getElementById('schedule-date').value + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
                 interview_time: document.getElementById('schedule-time').value,
-                interview_mode: document.getElementById('schedule-mode').value,
-                interview_location: document.getElementById('schedule-location').value,
+                interview_mode: 'Face-to-Face',
+                interview_location: 'Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug',
                 applicant_name: applicant.name,
                 applicant_email: applicant.email,
                 applicant_position: applicant.position
