@@ -64,6 +64,7 @@
                     <div class="card animate-on-scroll" data-delay="100"><div class="card-icon"></div><h3 data-key="solutions-card1-title">Cross-Border Platforms</h3><p data-key="solutions-card1-text">Seamlessly connect markets with our robust and scalable e-commerce infrastructure.</p><a href="#" class="card-link" data-key="learn-more">Learn More →</a></div>
                     <div class="card animate-on-scroll" data-delay="200"><div class="card-icon"></div><h3 data-key="solutions-card2-title">Global Talent Management</h3><p data-key="solutions-card2-text">Unify your international teams with one adaptive, intelligent software suite.</p><a href="solutions.html" class="card-link" data-key="learn-more">Learn More →</a></div>
                     <div class="card animate-on-scroll" data-delay="300"><div class="card-icon"></div><h3 data-key="solutions-card3-title">Technology Consulting</h3><p data-key="solutions-card3-text">Leverage our strategic expertise to navigate complex digital transformations.</p><a href="#" class="card-link" data-key="learn-more">Learn More →</a></div>
+                </div>
             </div>
         </section>
 
@@ -74,12 +75,12 @@
             </div>
         </section>
 
-        <!-- ADDED: "Join Our Mission" CTA and "Apply Now" Button -->
+        <!-- RESTORED: Original "Ready to Evolve?" CTA -->
         <section class="final-cta">
             <div class="container">
-                <h2 class="animate-on-scroll" data-key="about-cta-title">Join Our Mission</h2>
-                <p class="animate-on-scroll" data-delay="100" data-key="about-cta-text">We're looking for proactive and innovative minds to help us build the future. Explore our open positions.</p>
-                <a href="#" onclick="event.preventDefault(); window.openModal('application-modal')" class="btn btn-primary animate-on-scroll" data-delay="200" data-key="about-cta-button">Apply Now!</a>
+                <h2 class="animate-on-scroll" data-key="cta-title">Ready to Evolve?</h2>
+                <p class="animate-on-scroll" data-delay="100" data-key="cta-text">Let's build your future. Schedule a strategic consultation with our experts today.</p>
+                <a href="contact.html" class="btn btn-primary animate-on-scroll" data-delay="200" data-key="cta-button">Schedule a Consultation</a>
             </div>
         </section>
     </main>
@@ -96,29 +97,9 @@
         </div>
     </footer>
 
-    <!-- ADDED: Application Modal -->
-    <div id="application-modal" class="modal-overlay" style="display:none;">
-        <div class="modal-content">
-            <button class="modal-close" onclick="window.closeModal('application-modal')">×</button>
-            <h3>Apply to Lifewood</h3>
-            <form id="application-form" class="contact-form">
-                <div class="form-group"><label for="app-name">Full Name*</label><input type="text" id="app-name" required></div>
-                <div class="form-group"><label for="app-email">Email*</label><input type="email" id="app-email" required></div>
-                <div class="form-group">
-                    <label for="app-position">Position Applying For*</label>
-                    <select id="app-position" required>
-                        <option value="" disabled selected>Loading positions...</option>
-                    </select>
-                </div>
-                <div class="form-group"><label for="app-resumeLink">Link to Resume (Google Drive, Dropbox, etc.)*</label><input type="url" id="app-resumeLink" placeholder="https://..." required></div>
-                <div class="form-group"><label for="app-portfolioLink">Link to Portfolio/LinkedIn (Optional)</label><input type="url" id="app-portfolioLink" placeholder="https://..."></div>
-                <button type="submit" class="btn btn-primary btn-full">Submit Application</button>
-                <p id="applicant-form-feedback" style="text-align:center; display:none; margin-top:1rem;"></p>
-            </form>
-        </div>
-    </div>
+    <!-- REMOVED: The Application Modal has been deleted from this page. -->
 
-    <!-- Admin Login Modal -->
+    <!-- KEPT: Admin Login Modal for Konami Code -->
     <div id="admin-login-modal" class="modal-overlay" style="display:none;">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('admin-login-modal')">×</button>
