@@ -9,6 +9,42 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
     <style>
+        /* --- CORRECTED CSS FOR MODALS --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensures it's on top of other content */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.75rem;
+            cursor: pointer;
+            line-height: 1;
+            color: #555;
+        }
+
         .admin-section { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 24px; margin-bottom: 40px; }
         .admin-section h2 { margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         
@@ -43,7 +79,8 @@
         .status-scheduled { color: #8e44ad; } 
 
         @media (max-width: 768px) {
-            #page-admin table { border: 0; } #page-admin table thead { display: none; }
+            #page-admin table { border: 0; }
+            #page-admin table thead { display: none; }
             #page-admin table tr { display: block; margin-bottom: 1.5rem; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); padding: 1rem; }
             #page-admin table td { display: flex; justify-content: space-between; align-items: center; text-align: right; border-bottom: 1px dotted #eee; padding: 0.75rem 0.5rem; }
             #page-admin table td:last-child { border-bottom: none; }
@@ -60,7 +97,7 @@
 </head>
 <body id="page-admin">
 
-    <!-- NEW MODAL for Managing Positions -->
+    <!-- MODAL for Managing Positions -->
     <div class="modal" id="positions-modal" style="display:none;">
         <div class="modal-content">
             <button class="modal-close" onclick="window.closeModal('positions-modal')">×</button>
@@ -80,28 +117,10 @@
             <h2>Schedule Interview</h2>
             <form id="schedule-form" class="modal-form-grid">
                 <input type="hidden" id="schedule-doc-id">
-                <div class="form-group">
-                    <label for="schedule-date">Interview Date</label>
-                    <input type="date" id="schedule-date" required>
-                </div>
-                <div class="form-group">
-                    <label for="schedule-time">Interview Time</label>
-                    <input type="time" id="schedule-time" required>
-                </div>
-                <div class="form-group">
-                    <label for="schedule-mode">Interview Mode</label>
-                    <select id="schedule-mode" required>
-                        <option value="Face-to-Face">Face-to-Face</option>
-                        <option value="Online">Online</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="schedule-location">Location / Instructions</label>
-                    <select id="schedule-location" required>
-                        <option value="Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug">Cebu IT Park Office</option>
-                        <option value="An online meeting link will be sent separately.">Online Meeting</option>
-                    </select>
-                </div>
+                <div class="form-group"><label for="schedule-date">Interview Date</label><input type="date" id="schedule-date" required></div>
+                <div class="form-group"><label for="schedule-time">Interview Time</label><input type="time" id="schedule-time" required></div>
+                <div class="form-group"><label for="schedule-mode">Interview Mode</label><select id="schedule-mode" required><option value="Face-to-Face">Face-to-Face</option><option value="Online">Online</option></select></div>
+                <div class="form-group"><label for="schedule-location">Location / Instructions</label><select id="schedule-location" required><option value="Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug">Cebu IT Park Office</option><option value="An online meeting link will be sent separately.">Online Meeting</option></select></div>
                 <button type="submit" class="btn btn-primary btn-schedule">Send Invitation</button>
             </form>
         </div>
@@ -117,7 +136,6 @@
     <main>
         <section>
             <div class="container">
-                
                 <div class="page-actions">
                     <button id="manage-positions-btn" class="btn btn-primary">Manage Job Positions</button>
                 </div>
@@ -125,14 +143,8 @@
                 <div class="admin-section">
                     <h2>Submitted Applications</h2>
                     <div class="filter-controls">
-                        <div class="position-filter-container">
-                            <label for="position-filter">Filter by Position:</label>
-                            <select id="position-filter"><option value="all">All Positions</option></select>
-                        </div>
-                        <div class="tabs">
-                            <button class="tab-btn active" data-tab="pending">Pending</button>
-                            <button class="tab-btn" data-tab="processed">Processed</button>
-                        </div>
+                        <div class="position-filter-container"><label for="position-filter">Filter by Position:</label><select id="position-filter"><option value="all">All Positions</option></select></div>
+                        <div class="tabs"><button class="tab-btn active" data-tab="pending">Pending</button><button class="tab-btn" data-tab="processed">Processed</button></div>
                     </div>
                     <div id="applications-list"><p>Loading applications...</p></div>
                 </div>
