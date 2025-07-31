@@ -12,6 +12,8 @@
         .admin-section { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 24px; margin-bottom: 40px; }
         .admin-section h2 { margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         
+        .page-actions { margin-bottom: 40px; }
+
         .modal-form-grid { display: grid; gap: 16px; }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #555; }
@@ -41,8 +43,7 @@
         .status-scheduled { color: #8e44ad; } 
 
         @media (max-width: 768px) {
-            #page-admin table { border: 0; }
-            #page-admin table thead { display: none; }
+            #page-admin table { border: 0; } #page-admin table thead { display: none; }
             #page-admin table tr { display: block; margin-bottom: 1.5rem; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); padding: 1rem; }
             #page-admin table td { display: flex; justify-content: space-between; align-items: center; text-align: right; border-bottom: 1px dotted #eee; padding: 0.75rem 0.5rem; }
             #page-admin table td:last-child { border-bottom: none; }
@@ -52,13 +53,25 @@
         }
     </style>
     <script>
-        // Security check to redirect if not logged in
         if (sessionStorage.getItem('lifewood_admin_auth') !== 'true') {
             window.location.replace('index.html');
         }
     </script>
 </head>
 <body id="page-admin">
+
+    <!-- NEW MODAL for Managing Positions -->
+    <div class="modal" id="positions-modal" style="display:none;">
+        <div class="modal-content">
+            <button class="modal-close" onclick="window.closeModal('positions-modal')">×</button>
+            <h2>Manage Job Positions</h2>
+            <form id="position-management-form">
+                <input type="text" id="new-position-name" placeholder="Enter new job title" required>
+                <button type="submit" class="btn btn-primary">Add Position</button>
+            </form>
+            <ul id="positions-list"></ul>
+        </div>
+    </div>
 
     <!-- MODAL for Scheduling Interview -->
     <div class="modal" id="schedule-modal" style="display:none;">
@@ -104,13 +117,9 @@
     <main>
         <section>
             <div class="container">
-                <div class="admin-section">
-                    <h2>Manage Job Positions</h2>
-                    <form id="position-management-form">
-                        <input type="text" id="new-position-name" placeholder="Enter new job title" required>
-                        <button type="submit" class="btn btn-primary">Add Position</button>
-                    </form>
-                    <ul id="positions-list"></ul>
+                
+                <div class="page-actions">
+                    <button id="manage-positions-btn" class="btn btn-primary">Manage Job Positions</button>
                 </div>
 
                 <div class="admin-section">
@@ -135,9 +144,8 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
-        // --- Your Keys and IDs ---
         const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
-        const EMAILJS_SCHEDULE_TEMPLATE_ID = 'template_jfzey48'; // Using your specified template for schedules
+        const EMAILJS_SCHEDULE_TEMPLATE_ID = 'template_jfzey48';
         const EMAILJS_FAILED_TEMPLATE_ID = 'template_m5sztl8';
         const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
         
@@ -162,11 +170,9 @@
         let allApplications = []; 
         let activeTab = 'pending';
         
-        // Helper functions for modals
         window.openModal = (modalId) => document.getElementById(modalId).style.display = 'flex';
         window.closeModal = (modalId) => document.getElementById(modalId).style.display = 'none';
 
-        // --- JOB POSITION MANAGEMENT LOGIC ---
         const positionsCollection = collection(db, "positions");
         const renderPositions = async () => {
             const querySnapshot = await getDocs(query(positionsCollection, orderBy("name")));
@@ -203,7 +209,6 @@
             }
         });
         
-        // --- APPLICATION SUBMISSION LOGIC ---
         function renderTable() {
             let filteredApps = allApplications.filter(app => activeTab === 'pending' ? app.data.status === 'Pending' : app.data.status !== 'Pending');
             if (positionFilter.value !== 'all') {
@@ -255,11 +260,14 @@
                 renderTable();
             } catch (err) {
                 console.error("Error during initial fetch: ", err);
-                applicationsListDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Could not retrieve data. Check Firestore rules and console.</p>`;
+                applicationsListDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Could not retrieve data.</p>`;
             }
         }
 
-        // --- Event Listeners ---
+        document.getElementById('manage-positions-btn').addEventListener('click', () => {
+            window.openModal('positions-modal');
+        });
+        
         document.querySelectorAll('.tab-btn').forEach(button => {
             button.addEventListener('click', () => {
                 document.querySelector('.tab-btn.active').classList.remove('active');
