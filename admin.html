@@ -26,7 +26,7 @@
         /* Compact Job Position Management Styles */
         #position-management-form { display: flex; gap: 12px; margin-bottom: 20px; }
         #new-position-name { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        #positions-list { display: flex; flex-wrap: wrap; gap: 10px; padding: 0; list-style: none; min-height: 38px; /* Prevents layout shift when empty */ }
+        #positions-list { display: flex; flex-wrap: wrap; gap: 10px; padding: 0; list-style: none; min-height: 38px; }
         .position-tag { display: inline-flex; align-items: center; background-color: #e0e0e0; color: #333; padding: 6px 12px; border-radius: 16px; font-size: 0.9rem; font-weight: 500; }
         .delete-position-btn { background: #888; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 14px; font-weight: bold; line-height: 20px; text-align: center; cursor: pointer; margin-left: 8px; transition: background-color 0.2s; }
         .delete-position-btn:hover { background: #c0392b; }
@@ -46,32 +46,6 @@
         .status-passed { color: #28a745; }
         .status-failed { color: #dc3545; }
         .status-pending { color: #6c757d; }
-        .status-interview { color: #007bff; } /* <!-- NEW/MODIFIED --> */
-
-        /* <!-- NEW/MODIFIED: Modal Styles --> */
-        .modal-overlay {
-            display: none; /* Hidden by default */
-            position: fixed;
-            z-index: 1000;
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background-color: #fff;
-            padding: 2rem;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        .modal-content h3 { margin-top: 0; }
-        .modal-form-group { margin-bottom: 1rem; }
-        .modal-form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-        .modal-form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        .modal-actions { text-align: right; margin-top: 1.5rem; }
 
         @media (max-width: 768px) {
             #page-admin table { border: 0; }
@@ -133,42 +107,15 @@
         </section>
     </main>
 
-    <!-- NEW/MODIFIED: Interview Scheduling Modal -->
-    <div id="interview-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Schedule Interview</h3>
-            <p>For application: <strong id="modal-applicant-name"></strong></p>
-            <form id="interview-form">
-                <div class="modal-form-group">
-                    <label for="interview-date">Interview Date</label>
-                    <input type="date" id="interview-date" required>
-                </div>
-                <div class="modal-form-group">
-                    <label for="interview-time">Interview Time</label>
-                    <input type="time" id="interview-time" required>
-                </div>
-                <div class="modal-form-group">
-                    <label for="interview-method">Method / Link / Address</label>
-                    <input type="text" id="interview-method" placeholder="e.g., Google Meet link, physical address" required>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" id="cancel-interview-btn" class="btn btn-secondary">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Schedule & Send Email</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
+        // <!-- NEW/MODIFIED: Update your EmailJS constants -->
         const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
-        const EMAILJS_PASSED_TEMPLATE_ID = 'template_jfzey48'; // This is now a fallback if you want to use it
+        // PASTE YOUR NEW "PASSED" TEMPLATE ID HERE
+        const EMAILJS_PASSED_TEMPLATE_ID = 'YOUR_NEW_PASSED_TEMPLATE_ID'; 
         const EMAILJS_FAILED_TEMPLATE_ID = 'template_m5sztl8';
-        // <!-- NEW/MODIFIED -->
-        const EMAILJS_INTERVIEW_TEMPLATE_ID = 'YOUR_NEW_INTERVIEW_TEMPLATE_ID'; // <-- IMPORTANT: PASTE YOUR NEW TEMPLATE ID HERE
         const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
 
         const firebaseConfig = {
@@ -188,35 +135,29 @@
         const positionsListUL = document.getElementById('positions-list');
         const positionMgmtForm = document.getElementById('position-management-form');
         const newPositionInput = document.getElementById('new-position-name');
-        
-        // <!-- NEW/MODIFIED: Modal Elements -->
-        const interviewModal = document.getElementById('interview-modal');
-        const interviewForm = document.getElementById('interview-form');
-        const cancelInterviewBtn = document.getElementById('cancel-interview-btn');
-        const modalApplicantName = document.getElementById('modal-applicant-name');
-        let currentSchedulingDocId = null;
 
         let allApplications = []; 
         let activeTab = 'pending';
         
         // --- JOB POSITION MANAGEMENT LOGIC (Unchanged) ---
         const positionsCollection = collection(db, "positions");
-        const renderPositions = async () => { /* ... no changes here ... */ const querySnapshot = await getDocs(query(positionsCollection, orderBy("name"))); positionsListUL.innerHTML = ''; querySnapshot.forEach(doc => { const li = document.createElement('li'); li.className = 'position-tag'; li.innerHTML = `<span>${doc.data().name}</span><button class="delete-position-btn" data-doc-id="${doc.id}">×</button>`; positionsListUL.appendChild(li); }); };
-        positionMgmtForm.addEventListener('submit', async (e) => { /* ... no changes here ... */ e.preventDefault(); const positionName = newPositionInput.value.trim(); if (!positionName) return; newPositionInput.disabled = true; await addDoc(positionsCollection, { name: positionName }); newPositionInput.value = ''; newPositionInput.disabled = false; await renderPositions(); await populatePositionFilter(); });
-        positionsListUL.addEventListener('click', async (e) => { /* ... no changes here ... */ const deleteButton = e.target.closest('.delete-position-btn'); if (deleteButton) { const docId = deleteButton.dataset.docId; if (confirm('Are you sure you want to delete this position?')) { await deleteDoc(doc(db, 'positions', docId)); await renderPositions(); await populatePositionFilter(); } } });
+        const renderPositions = async () => { const querySnapshot = await getDocs(query(positionsCollection, orderBy("name"))); positionsListUL.innerHTML = ''; querySnapshot.forEach(doc => { const li = document.createElement('li'); li.className = 'position-tag'; li.innerHTML = `<span>${doc.data().name}</span><button class="delete-position-btn" data-doc-id="${doc.id}">×</button>`; positionsListUL.appendChild(li); }); };
+        positionMgmtForm.addEventListener('submit', async (e) => { e.preventDefault(); const positionName = newPositionInput.value.trim(); if (!positionName) return; newPositionInput.disabled = true; await addDoc(positionsCollection, { name: positionName }); newPositionInput.value = ''; newPositionInput.disabled = false; await renderPositions(); await populatePositionFilter(); });
+        positionsListUL.addEventListener('click', async (e) => { const deleteButton = e.target.closest('.delete-position-btn'); if (deleteButton) { const docId = deleteButton.dataset.docId; if (confirm('Are you sure you want to delete this position?')) { await deleteDoc(doc(db, 'positions', docId)); await renderPositions(); await populatePositionFilter(); } } });
 
         // --- APPLICATION SUBMISSION LOGIC ---
-        
-        // <!-- NEW/MODIFIED: This function is now only for "Failed" status -->
+        // <!-- NEW/MODIFIED: Simplified email function for both statuses -->
         async function sendStatusEmail(applicant, status) {
-            if (status !== 'Failed') {
-                console.warn("sendStatusEmail is now intended only for 'Failed' status.");
-                return true; // Assume success for other types handled elsewhere
-            }
-            const templateParams = { applicant_name: applicant.name, applicant_position: applicant.position, applicant_email: applicant.email };
+            const templateId = status === 'Passed' ? EMAILJS_PASSED_TEMPLATE_ID : EMAILJS_FAILED_TEMPLATE_ID;
+            // The template params are the same for both, as they use the same variables
+            const templateParams = { 
+                applicant_name: applicant.name, 
+                applicant_position: applicant.position, 
+                applicant_email: applicant.email 
+            };
             try {
-                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_FAILED_TEMPLATE_ID, templateParams);
-                alert(`Rejection email sent successfully to ${applicant.name}.`);
+                await emailjs.send(EMAILJS_SERVICE_ID, templateId, templateParams);
+                alert(`Email sent successfully to ${applicant.name}!`);
                 return true;
             } catch (error) {
                 console.error('EmailJS Error:', error);
@@ -239,19 +180,9 @@
             }
             let tableHtml = `<table><thead><tr><th>Name</th><th>Email</th><th>Position</th><th>Links</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
             
-            // <!-- NEW/MODIFIED: Updated row rendering logic -->
+            // <!-- NEW/MODIFIED: Simplified row rendering -->
             filteredApps.forEach(app => {
                 const data = app.data; const docId = app.id; const statusClass = `status-${(data.status || 'pending').toLowerCase()}`;
-                
-                let statusHtml = `<strong class="status ${statusClass}">${data.status||'Pending'}</strong>`;
-                if (data.status === 'Interview') {
-                     statusHtml = `<div class="status ${statusClass}">
-                        <strong>Interview Scheduled</strong><br>
-                        <small>${new Date(data.interviewDate).toLocaleDateString()} at ${data.interviewTime}</small><br>
-                        <small>Method: ${data.interviewMethod}</small>
-                    </div>`;
-                }
-
                 tableHtml += `
                     <tr id="row-${docId}">
                         <td data-label="Name">${data.name||'N/A'}</td>
@@ -261,9 +192,9 @@
                             <a href="${data.resumeLink}" target="_blank" rel="noopener noreferrer">Resume</a> 
                             ${data.portfolioLink?`| <a href="${data.portfolioLink}" target="_blank" rel="noopener noreferrer">Portfolio</a>`:''}
                         </td>
-                        <td data-label="Status">${statusHtml}</td>
+                        <td data-label="Status"><strong class="status ${statusClass}">${data.status||'Pending'}</strong></td>
                         <td class="action-buttons" data-doc-id="${docId}">
-                            <button class="btn-passed" style="display:${data.status==='Pending'?'inline-block':'none'};">Schedule Interview</button>
+                            <button class="btn-passed" style="display:${data.status==='Pending'?'inline-block':'none'};">Passed</button>
                             <button class="btn-failed" style="display:${data.status==='Pending'?'inline-block':'none'};">Failed</button>
                             <button class="btn-delete" style="display:${data.status!=='Pending'?'inline-block':'none'};">Delete</button>
                         </td>
@@ -273,49 +204,43 @@
             applicationsListDiv.innerHTML = tableHtml;
         }
 
-        async function populatePositionFilter() { /* ... no changes here ... */ positionFilter.innerHTML = '<option value="all">All Positions</option>'; const querySnapshot = await getDocs(query(positionsCollection, orderBy("name"))); querySnapshot.forEach(doc => { const positionName = doc.data().name; if (positionName) { const option = document.createElement('option'); option.value = positionName; option.textContent = positionName; positionFilter.appendChild(option); } }); }
+        async function populatePositionFilter() { positionFilter.innerHTML = '<option value="all">All Positions</option>'; const querySnapshot = await getDocs(query(positionsCollection, orderBy("name"))); querySnapshot.forEach(doc => { const positionName = doc.data().name; if (positionName) { const option = document.createElement('option'); option.value = positionName; option.textContent = positionName; positionFilter.appendChild(option); } }); }
         
-        async function initialFetch() { /* ... no changes here ... */ try { await renderPositions(); await populatePositionFilter(); const appsCollection = collection(db, "applications"); const q = query(appsCollection, orderBy("submittedAt", "desc")); const querySnapshot = await getDocs(q); allApplications = querySnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() })); renderTable(); } catch (err) { console.error("Error during initial fetch: ", err); applicationsListDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Could not retrieve data. Check Firestore rules and console.</p>`; } }
+        async function initialFetch() { try { await renderPositions(); await populatePositionFilter(); const appsCollection = collection(db, "applications"); const q = query(appsCollection, orderBy("submittedAt", "desc")); const querySnapshot = await getDocs(q); allApplications = querySnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() })); renderTable(); } catch (err) { console.error("Error during initial fetch: ", err); applicationsListDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Could not retrieve data. Check Firestore rules and console.</p>`; } }
 
         // --- Attaching all event listeners ---
         document.querySelectorAll('.tab-btn').forEach(button => { button.addEventListener('click', () => { document.querySelector('.tab-btn.active').classList.remove('active'); button.classList.add('active'); activeTab = button.dataset.tab; renderTable(); }); });
         positionFilter.addEventListener('change', renderTable);
         
-        // <!-- NEW/MODIFIED: Main click listener logic -->
+        // <!-- NEW/MODIFIED: Simplified click listener logic -->
         applicationsListDiv.addEventListener('click', async (e) => {
             const button = e.target.closest('button');
             if (!button) return;
+            
             const actionCell = e.target.closest('.action-buttons');
             const docId = actionCell.dataset.docId;
             const appData = allApplications.find(app => app.id === docId)?.data;
             if (!appData) return;
             
-            button.disabled = true; // Disable button to prevent double clicks
+            button.disabled = true; // Disable button immediately
+
+            const handleUpdate = async (newStatus) => {
+                const emailSent = await sendStatusEmail(appData, newStatus);
+                if (emailSent) {
+                    await updateDoc(doc(db, 'applications', docId), { status: newStatus });
+                    const appIndex = allApplications.findIndex(app => app.id === docId);
+                    if (appIndex > -1) allApplications[appIndex].data.status = newStatus;
+                    renderTable(); // Re-render the table to reflect the change
+                } else {
+                    button.disabled = false; // Re-enable button on email failure
+                }
+            };
 
             if (button.matches('.btn-passed')) {
-                // Open the modal instead of directly updating status
-                currentSchedulingDocId = docId;
-                modalApplicantName.textContent = appData.name;
-                interviewForm.reset();
-                interviewModal.style.display = 'flex';
-                button.disabled = false; // Re-enable the button in the table
+                await handleUpdate('Passed');
             } else if (button.matches('.btn-failed')) {
-                // Handle "Failed" status
-                if (confirm(`Are you sure you want to mark this application as failed and notify ${appData.name}?`)) {
-                    const emailSent = await sendStatusEmail(appData, 'Failed');
-                    if (emailSent) {
-                        await updateDoc(doc(db, 'applications', docId), { status: 'Failed' });
-                        const appIndex = allApplications.findIndex(app => app.id === docId);
-                        if (appIndex > -1) allApplications[appIndex].data.status = 'Failed';
-                        renderTable();
-                    } else {
-                        button.disabled = false; // Re-enable on failure
-                    }
-                } else {
-                    button.disabled = false;
-                }
+                await handleUpdate('Failed');
             } else if (button.matches('.btn-delete')) {
-                // Handle deletion
                 if (confirm('Are you sure you want to permanently delete this application? This cannot be undone.')) {
                     await deleteDoc(doc(db, 'applications', docId));
                     allApplications = allApplications.filter(app => app.id !== docId);
@@ -323,73 +248,6 @@
                 } else {
                     button.disabled = false;
                 }
-            }
-        });
-
-        // <!-- NEW/MODIFIED: Modal-related event listeners -->
-        cancelInterviewBtn.addEventListener('click', () => {
-            interviewModal.style.display = 'none';
-            currentSchedulingDocId = null;
-        });
-
-        interviewForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const scheduleButton = e.target.querySelector('button[type="submit"]');
-            scheduleButton.disabled = true;
-            scheduleButton.textContent = 'Scheduling...';
-            
-            const interviewDate = document.getElementById('interview-date').value;
-            const interviewTime = document.getElementById('interview-time').value;
-            const interviewMethod = document.getElementById('interview-method').value;
-
-            const applicantData = allApplications.find(app => app.id === currentSchedulingDocId)?.data;
-
-            if (!applicantData) {
-                alert('Error: Could not find applicant data.');
-                scheduleButton.disabled = false;
-                scheduleButton.textContent = 'Schedule & Send Email';
-                return;
-            }
-
-            const templateParams = {
-                applicant_name: applicantData.name,
-                applicant_position: applicantData.position,
-                applicant_email: applicantData.email,
-                interview_date: new Date(interviewDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-                interview_time: interviewTime,
-                interview_method: interviewMethod
-            };
-
-            try {
-                // 1. Send Email
-                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_INTERVIEW_TEMPLATE_ID, templateParams);
-                
-                // 2. Update Firestore
-                const newStatusData = { 
-                    status: 'Interview',
-                    interviewDate: interviewDate,
-                    interviewTime: interviewTime,
-                    interviewMethod: interviewMethod
-                };
-                await updateDoc(doc(db, 'applications', currentSchedulingDocId), newStatusData);
-                
-                // 3. Update Local State
-                const appIndex = allApplications.findIndex(app => app.id === currentSchedulingDocId);
-                if (appIndex > -1) {
-                    allApplications[appIndex].data = { ...allApplications[appIndex].data, ...newStatusData };
-                }
-
-                // 4. Clean up and re-render
-                alert(`Interview scheduled and email sent to ${applicantData.name}!`);
-                interviewModal.style.display = 'none';
-                renderTable();
-
-            } catch (error) {
-                console.error("Failed to schedule interview:", error);
-                alert("Failed to schedule interview. Check the console for details. The applicant was not notified.");
-            } finally {
-                scheduleButton.disabled = false;
-                scheduleButton.textContent = 'Schedule & Send Email';
             }
         });
         
