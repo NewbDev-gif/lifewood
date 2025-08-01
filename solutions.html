@@ -14,7 +14,6 @@
 </head>
 <body id="page-solutions">
 
-    <!-- ADDED: Achievement Popup for Konami Code -->
     <div id="achievement-popup">
         <span class="achievement-icon">🔑</span>
         <span class="achievement-text">Secret Unlocked!</span>
@@ -59,21 +58,9 @@
                 <h2 class="animate-on-scroll" data-key="solutions-caps-title">Core Capabilities</h2>
                 <p class="section-subtitle animate-on-scroll" data-delay="100" data-key="solutions-caps-subtitle">A comprehensive feature set engineered for modern marketing.</p>
                 <div class="grid-3">
-                    <div class="feature-item animate-on-scroll" data-delay="200">
-                        <div class="feature-icon icon-view"></div>
-                        <h4 data-key="solutions-caps-card1-title">360° Customer View</h4>
-                        <p data-key="solutions-caps-card1-text">Effortlessly stitch together data from every source—web, mobile, CRM, support—to see every customer as a whole person, not just a data point.</p>
-                    </div>
-                    <div class="feature-item animate-on-scroll" data-delay="300">
-                        <div class="feature-icon icon-audience"></div>
-                        <h4 data-key="solutions-caps-card2-title">Intuitive Audience Building</h4>
-                        <p data-key="solutions-caps-card2-text">Empower your marketing team to create rich, dynamic segments with a simple, no-code interface. Target the right customers at the perfect moment.</p>
-                    </div>
-                    <div class="feature-item animate-on-scroll" data-delay="400">
-                        <div class="feature-icon icon-activation"></div>
-                        <h4 data-key="solutions-caps-card3-title">Real-Time Activation</h4>
-                        <p data-key="solutions-caps-card3-text">Sync your unified data and audiences to your entire marketing and sales stack, powering personalized experiences that drive sustainable growth.</p>
-                    </div>
+                    <div class="feature-item animate-on-scroll" data-delay="200"><div class="feature-icon icon-view"></div><h4 data-key="solutions-caps-card1-title">360° Customer View</h4><p data-key="solutions-caps-card1-text">Effortlessly stitch together data from every source—web, mobile, CRM, support—to see every customer as a whole person, not just a data point.</p></div>
+                    <div class="feature-item animate-on-scroll" data-delay="300"><div class="feature-icon icon-audience"></div><h4 data-key="solutions-caps-card2-title">Intuitive Audience Building</h4><p data-key="solutions-caps-card2-text">Empower your marketing team to create rich, dynamic segments with a simple, no-code interface. Target the right customers at the perfect moment.</p></div>
+                    <div class="feature-item animate-on-scroll" data-delay="400"><div class="feature-icon icon-activation"></div><h4 data-key="solutions-caps-card3-title">Real-Time Activation</h4><p data-key="solutions-caps-card3-text">Sync your unified data and audiences to your entire marketing and sales stack, powering personalized experiences that drive sustainable growth.</p></div>
                 </div>
             </div>
         </section>
@@ -92,9 +79,9 @@
                 </div>
                 <div class="contact-form-wrapper lead-gen-form animate-on-scroll" data-delay="200">
                      <form class="contact-form">
-                        <div class="form-group"><label for="name">Full Name*</label><input type="text" id="name" name="name" required></div>
-                        <div class="form-group"><label for="email">Work Email*</label><input type="email" id="email" name="email" required></div>
-                        <div class="form-group"><label for="company">Company Name</label><input type="text" id="company" name="company"></div>
+                        <div class="form-group"><label for="name">Full Name*</label><input type="text" id="name" name="name" autocomplete="name" required></div>
+                        <div class="form-group"><label for="email">Work Email*</label><input type="email" id="email" name="email" autocomplete="email" required></div>
+                        <div class="form-group"><label for="company">Company Name</label><input type="text" id="company" name="company" autocomplete="organization"></div>
                         <button type="submit" class="btn btn-primary btn-full" data-key="solutions-demo-button">Schedule My Demo</button>
                     </form>
                 </div>
@@ -114,14 +101,13 @@
         </div>
     </footer>
 
-    <!-- ADDED: Admin Login Modal -->
     <div id="admin-login-modal" class="modal-overlay" style="display:none;">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('admin-login-modal')">×</button>
             <h3>Admin Access</h3>
             <form id="admin-login-form" class="contact-form">
-                <div class="form-group"><label for="admin-email">Email</label><input type="email" id="admin-email" required></div>
-                <div class="form-group"><label for="admin-password">Password</label><input type="password" id="admin-password" required></div>
+                <div class="form-group"><label for="admin-email">Email</label><input type="email" id="admin-email" autocomplete="email" required></div>
+                <div class="form-group"><label for="admin-password">Password</label><input type="password" id="admin-password" autocomplete="current-password" required></div>
                 <button type="submit" class="btn btn-primary btn-full">Login</button>
                 <p id="admin-login-error" style="color:red; display:none; margin-top:1rem; text-align:center;">Invalid credentials.</p>
             </form>
