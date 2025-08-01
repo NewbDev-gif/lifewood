@@ -467,3 +467,72 @@ body.nav-open .hamburger::after {
     transform: translate(-50%, 0);
 }
 .achievement-icon { font-size: 1.5rem; }
+/* --- NEW: Animations & Transitions --- */
+
+/* 1. Global Hover Effects */
+.btn, .card, .team-card, .logo, .social-icon {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+}
+
+.btn:hover, .card:hover, .team-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.team-card:hover {
+    transform: translateY(-8px);
+}
+
+.logo:hover {
+    transform: scale(1.05);
+}
+
+.social-icon:hover {
+    transform: scale(1.1);
+    filter: brightness(1.2);
+}
+
+a {
+    transition: color 0.3s ease;
+}
+
+/* 2. Enhanced Modal Animations */
+.modal-overlay {
+    transition: opacity 0.3s ease-in-out;
+}
+
+.modal-content {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    transform: scale(0.95);
+    opacity: 0;
+}
+
+/* States controlled by JavaScript */
+.modal-overlay.is-opening {
+    opacity: 1;
+}
+.modal-overlay.is-opening .modal-content {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.modal-overlay.is-closing {
+    opacity: 0;
+}
+.modal-overlay.is-closing .modal-content {
+    transform: scale(0.95);
+    opacity: 0;
+}
+
+
+/* 3. Refined On-Scroll Animations */
+.animate-on-scroll, .animate-on-load {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.animate-on-scroll.is-visible, .animate-on-load.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
