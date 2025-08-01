@@ -1,4 +1,4 @@
-// script.js - v14 (Final, with Konami Achievement Popup)
+// script.js - v14.1 (Final, with scroll prevention)
 
 // ==================================================
 // ======== 0. FIREBASE SETUP (Module Syntax) =======
@@ -211,48 +211,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // --- Konami Code Easter Egg for Admin Login ---
-    const konamiSequence = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'b', 'a'];
-    let konamiPosition = 0;
+    const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    const touchSequence = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'b', 'a'];
+    let keyPosition = 0;
+    let touchPosition = 0;
     let touchStartX = 0;
     let touchStartY = 0;
     let lastTap = 0;
     let konamiInProgress = false;
 
-    function checkKonami(key) {
+    function triggerKonami() {
         if (konamiInProgress) return;
-
-        if (key === konamiSequence[konamiPosition]) {
-            konamiPosition++;
-            if (konamiPosition === konamiSequence.length) {
-                konamiInProgress = true;
-                konamiPosition = 0;
-                
-                const achievementPopup = document.getElementById('achievement-popup');
-                
-                if (achievementPopup) {
-                    achievementPopup.classList.add('is-visible');
-                }
-                
-                setTimeout(() => {
-                    if (achievementPopup) {
-                        achievementPopup.classList.remove('is-visible');
-                    }
-                    setTimeout(() => {
-                        window.openModal('admin-login-modal');
-                        konamiInProgress = false;
-                    }, 500);
-                }, 2000);
-            }
-        } else {
-            konamiPosition = (key === konamiSequence[0]) ? 1 : 0;
-        }
+        konamiInProgress = true;
+        
+        const achievementPopup = document.getElementById('achievement-popup');
+        if (achievementPopup) achievementPopup.classList.add('is-visible');
+        
+        setTimeout(() => {
+            if (achievementPopup) achievementPopup.classList.remove('is-visible');
+            setTimeout(() => {
+                window.openModal('admin-login-modal');
+                konamiInProgress = false;
+            }, 500);
+        }, 2000);
     }
     
     document.addEventListener('keydown', (e) => {
-        if (!e.key) return;
-        let key = e.key.toLowerCase();
-        if (key.startsWith('arrow')) { key = key.substring(5); }
-        checkKonami(key);
+        if (!e.key || konamiInProgress) return;
+        
+        if (e.key === konamiSequence[keyPosition]) {
+            if (e.key.startsWith('Arrow')) {
+                e.preventDefault(); // Prevent scrolling only for arrow keys
+            }
+            keyPosition++;
+            if (keyPosition === konamiSequence.length) {
+                triggerKonami();
+                keyPosition = 0;
+            }
+        } else {
+            keyPosition = (e.key === konamiSequence[0]) ? 1 : 0;
+        }
     });
 
     document.addEventListener('touchstart', (e) => {
@@ -261,8 +259,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTap;
         if (tapLength < 300 && tapLength > 0) {
-            if (konamiSequence[konamiPosition] === 'b' || konamiSequence[konamiPosition] === 'a') {
-                checkKonami(konamiSequence[konamiPosition]);
+            if (touchSequence[touchPosition] === 'b' || touchSequence[touchPosition] === 'a') {
+                touchPosition++;
+                if (touchPosition === touchSequence.length) {
+                    triggerKonami();
+                    touchPosition = 0;
+                }
+            } else {
+                touchPosition = 0;
             }
             e.preventDefault();
         }
@@ -275,9 +279,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const deltaX = touchEndX - touchStartX;
         const deltaY = touchEndY - touchStartY;
         const minSwipeDistance = 50;
-        if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) < minSwipeDistance) { return; }
-        if (Math.abs(deltaX) > Math.abs(deltaY)) { checkKonami(deltaX > 0 ? 'right' : 'left'); } 
-        else { checkKonami(deltaY > 0 ? 'down' : 'up'); }
+        if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) < minSwipeDistance) return;
+
+        let direction;
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            direction = (deltaX > 0) ? 'right' : 'left';
+        } else {
+            direction = (deltaY > 0) ? 'down' : 'up';
+        }
+
+        if (direction === touchSequence[touchPosition]) {
+            touchPosition++;
+            if (touchPosition === touchSequence.length) {
+                triggerKonami();
+                touchPosition = 0;
+            }
+        } else {
+            touchPosition = (direction === touchSequence[0]) ? 1 : 0;
+        }
     });
 
     // --- Admin Login Form Handler ---
