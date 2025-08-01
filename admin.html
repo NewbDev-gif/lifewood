@@ -55,8 +55,7 @@
         .status-failed { color: #dc3545; }
 
         @media (max-width: 768px) {
-            #page-admin table { border: 0; }
-            #page-admin table thead { display: none; }
+            #page-admin table { border: 0; } #page-admin table thead { display: none; }
             #page-admin table tr { display: block; margin-bottom: 1.5rem; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); padding: 1rem; }
             #page-admin table td { display: flex; justify-content: space-between; align-items: center; text-align: right; border-bottom: 1px dotted #eee; padding: 0.75rem 0.5rem; }
             #page-admin table td:last-child { border-bottom: none; }
@@ -73,7 +72,6 @@
 </head>
 <body id="page-admin">
 
-    <!-- MODAL for Managing Positions -->
     <div class="modal" id="positions-modal" style="display:none;">
         <div class="modal-content">
             <button class="modal-close" onclick="window.closeModal('positions-modal')">×</button>
@@ -86,7 +84,6 @@
         </div>
     </div>
 
-    <!-- REFINED MODAL for Scheduling Interview -->
     <div class="modal" id="schedule-modal" style="display:none;">
         <div class="modal-content">
             <button class="modal-close" onclick="window.closeModal('schedule-modal')">×</button>
@@ -112,9 +109,7 @@
         <section>
             <div class="container">
                 <div class="admin-section">
-                    <div class="page-actions">
-                        <button id="manage-positions-btn" class="btn btn-primary">Manage Job Positions</button>
-                    </div>
+                    <div class="page-actions"><button id="manage-positions-btn" class="btn btn-primary">Manage Job Positions</button></div>
                     <h2>Submitted Applications</h2>
                     <div class="filter-controls">
                         <div class="position-filter-container"><label for="position-filter">Filter by Position:</label><select id="position-filter"><option value="all">All Positions</option></select></div>
@@ -214,9 +209,7 @@
                 }
                 let actionButtonsHtml = '';
                 if (data.status === 'Pending') {
-                    actionButtonsHtml = `
-                        <button class="btn-passed">Pass & Schedule</button>
-                        <button class="btn-failed">Fail</button>`;
+                    actionButtonsHtml = `<button class="btn-passed">Pass & Schedule</button><button class="btn-failed">Fail</button>`;
                 } else {
                     actionButtonsHtml = `<button class="btn-delete">Delete</button>`;
                 }
@@ -310,6 +303,7 @@
             const interviewDetails = {
                 interview_date: new Date(document.getElementById('schedule-date').value + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
                 interview_time: document.getElementById('schedule-time').value,
+                interview_mode: 'Face-to-Face',
                 interview_location: 'Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug',
                 applicant_name: applicant.name,
                 applicant_email: applicant.email,
