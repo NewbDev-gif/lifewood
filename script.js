@@ -1,4 +1,4 @@
-// script.js - v14.1 (Final, with scroll prevention)
+// script.js - v15 (With Enhanced Animations)
 
 // ==================================================
 // ======== 0. FIREBASE SETUP (Module Syntax) =======
@@ -25,6 +25,7 @@ const db = getFirestore(app);
 const body = document.body;
 let originalModalHTML = ''; 
 
+// UPDATED: openModal to handle animations
 window.openModal = function(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
@@ -33,21 +34,28 @@ window.openModal = function(modalId) {
             attachFormListener(); 
             populatePositionsDropdown();
         }
-        modal.classList.remove('is-closing');
+        
         modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('is-opening');
+        }, 10); 
+        
         body.classList.add('modal-open');
     }
 }
 
+// UPDATED: closeModal to handle animations
 window.closeModal = function(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
+        modal.classList.remove('is-opening');
         modal.classList.add('is-closing');
+        
         setTimeout(() => {
-            modal.style.display = 'none';
             modal.classList.remove('is-closing');
+            modal.style.display = 'none';
             body.classList.remove('modal-open');
-        }, 300);
+        }, 300); // This duration should match your CSS transition duration
     }
 }
 
@@ -210,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollElements.forEach(el => el.classList.add('is-visible'));
     }
     
-    // --- Konami Code Easter Egg for Admin Login ---
+    // Konami Code Easter Egg for Admin Login
     const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
     const touchSequence = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'b', 'a'];
     let keyPosition = 0;
@@ -241,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (e.key === konamiSequence[keyPosition]) {
             if (e.key.startsWith('Arrow')) {
-                e.preventDefault(); // Prevent scrolling only for arrow keys
+                e.preventDefault();
             }
             keyPosition++;
             if (keyPosition === konamiSequence.length) {
@@ -299,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Admin Login Form Handler ---
+    // Admin Login Form Handler
     const adminLoginForm = document.getElementById('admin-login-form');
     if (adminLoginForm) {
         adminLoginForm.addEventListener('submit', (e) => {
