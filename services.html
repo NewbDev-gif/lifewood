@@ -14,7 +14,6 @@
 </head>
 <body id="page-services">
 
-    <!-- ADDED: Achievement Popup for Konami Code -->
     <div id="achievement-popup">
         <span class="achievement-icon">🔑</span>
         <span class="achievement-text">Secret Unlocked!</span>
@@ -68,7 +67,7 @@
         <div class="container grid-2">
           <div class="animate-on-scroll"><h2 data-key="cta-title">Stay Ahead of the Curve.</h2><p data-key="cta-text">Get the latest Lifewood insights delivered directly to your inbox.</p></div>
           <form class="newsletter-form animate-on-scroll" data-delay="100">
-            <input type="email" placeholder="Enter your email address" required aria-required="true">
+            <input type="email" placeholder="Enter your email address" autocomplete="email" required>
             <button type="submit" class="btn btn-primary" data-key="cta-button">Subscribe</button>
           </form>
         </div>
@@ -87,20 +86,13 @@
         </div>
     </footer>
 
-    <!-- ADDED: Admin Login Modal -->
     <div id="admin-login-modal" class="modal-overlay" style="display:none;">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('admin-login-modal')">×</button>
             <h3>Admin Access</h3>
             <form id="admin-login-form" class="contact-form">
-                <div class="form-group">
-                    <label for="admin-email">Email</label>
-                    <input type="email" id="admin-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="admin-password">Password</label>
-                    <input type="password" id="admin-password" required>
-                </div>
+                <div class="form-group"><label for="admin-email">Email</label><input type="email" id="admin-email" autocomplete="email" required></div>
+                <div class="form-group"><label for="admin-password">Password</label><input type="password" id="admin-password" autocomplete="current-password" required></div>
                 <button type="submit" class="btn btn-primary btn-full">Login</button>
                 <p id="admin-login-error" style="color:red; display:none; margin-top:1rem; text-align:center;">Invalid credentials.</p>
             </form>
