@@ -8,7 +8,7 @@
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
-    <!-- STYLES WITH THE FIX -->
+    <!-- STYLES WITH THE MODAL FIX -->
     <style>
         :root { /* Define CSS variables for easier theming if needed */
             --dark-serpent: #133020; /* Example color */
@@ -21,8 +21,9 @@
             padding: 20px; box-sizing: border-box;
         }
         
-        /* --- THIS IS THE CORRECTED STYLE FOR THE MODAL CONTENT --- */
+        /* --- THIS IS THE CORRECTED STYLE --- */
         .modal-content {
+            /* display: block !important; <-- THIS CONFLICTING LINE HAS BEEN REMOVED */
             background: #fff;
             padding: 2rem;
             border-radius: 8px;
@@ -56,7 +57,6 @@
         .position-filter-container label { font-weight: 600; margin-right: 8px; }
         #position-filter { padding: 8px 12px; font-size: 0.95rem; border-radius: 6px; border: 1px solid #ccc; }
         
-        /* THIS IS THE NEW STYLE FOR THE TABS */
         .tabs { 
             display: flex; border: 1px solid #ccc; border-radius: 8px;
             overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -69,7 +69,6 @@
         .tabs .tab-btn:last-child { border-right: none; }
         .tab-btn.active, .tab-btn:hover { background-color: var(--dark-serpent); color: var(--white); }
         
-        /* THIS IS THE NEW STYLE FOR THE ACTION BUTTONS */
         .action-buttons button {
             display: inline-block; padding: 6px 14px; margin: 2px 4px;
             border-radius: 6px; font-weight: 600; text-decoration: none;
@@ -114,16 +113,15 @@
     <header class="main-header"><div class="container"><a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-icon" /><div class="logo-text-stack"><span class="logo-text">lifewood</span></div></a><button id="logout-button" class="btn">Logout</button></div></header>
     <main><section><div class="container"><div class="admin-section"><div class="page-actions"><button id="manage-positions-btn" class="btn btn-primary">Manage Job Positions</button></div><h2>Submitted Applications</h2><div class="filter-controls"><div class="position-filter-container"><label for="position-filter">Filter by Position:</label><select id="position-filter"><option value="all">All Positions</option></select></div><div class="tabs"><button class="tab-btn active" data-tab="pending">Pending</button><button class="tab-btn" data-tab="processed">Processed</button></div></div><div id="applications-list"><p>Loading applications...</p></div></div></div></section></main>
 
-    <!-- THE SCRIPT (NO CHANGES NEEDED HERE) -->
+    <!-- SCRIPT (NO CHANGES NEEDED HERE, IT'S ALREADY CORRECT) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
-        // This function runs once the entire page is loaded and ready
         document.addEventListener('DOMContentLoaded', () => {
             const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
             const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
-            const APPLICANT_TEMPLATE_ID = 'template_jfzey48'; // <-- PASTE YOUR MASTER TEMPLATE ID
+            const APPLICANT_TEMPLATE_ID = 'template_jfzey48';
             
             const firebaseConfig = { apiKey: "AIzaSyDfeMg7BzcR1UvsZtFv4SQQtfJZWSdsGxY", authDomain: "lifewood-420.firebaseapp.com", projectId: "lifewood-420", storageBucket: "lifewood-420.firebasestorage.app", messagingSenderId: "277748825194", appId: "1:277748825194:web:a39e906c4bdf3417e25e13" };
 
@@ -216,18 +214,11 @@
                         actionButtonsHtml = `<button class="btn-passed">Pass & Schedule</button><button class="btn-fail">Fail</button>`;
                     } else if (data.status === 'Scheduled') {
                         actionButtonsHtml = `<button class="btn-hired">Mark as Hired</button><button class="btn-fail">Fail</button>`;
-                    } else { // This covers 'Hired' and 'Failed' statuses
+                    } else {
                         actionButtonsHtml = `<button class="btn-delete">Delete</button>`;
                     }
 
-                    tableHtml += `<tr id="row-${docId}">
-                        <td data-label="Name">${data.name||'N/A'}</td>
-                        <td data-label="Email"><a href="mailto:${data.email}">${data.email||'N/A'}</a></td>
-                        <td data-label="Position">${data.position||'N/A'}</td>
-                        <td data-label="Links"><a href="${data.resumeLink}" target="_blank">Resume</a> ${data.portfolioLink?`| <a href="${data.portfolioLink}" target="_blank">Portfolio</a>`:''}</td>
-                        <td data-label="Status">${statusHtml}</td>
-                        <td class="action-buttons" data-doc-id="${docId}">${actionButtonsHtml}</td>
-                    </tr>`;
+                    tableHtml += `<tr id="row-${docId}"><td data-label="Name">${data.name||'N/A'}</td><td data-label="Email"><a href="mailto:${data.email}">${data.email||'N/A'}</a></td><td data-label="Position">${data.position||'N/A'}</td><td data-label="Links"><a href="${data.resumeLink}" target="_blank">Resume</a> ${data.portfolioLink?`| <a href="${data.portfolioLink}" target="_blank">Portfolio</a>`:''}</td><td data-label="Status">${statusHtml}</td><td class="action-buttons" data-doc-id="${docId}">${actionButtonsHtml}</td></tr>`;
                 });
                 applicationsListDiv.innerHTML = tableHtml + '</tbody></table>';
             }
