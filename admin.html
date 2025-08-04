@@ -9,6 +9,7 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
 <style>
+    /* YOUR ORIGINAL STYLES - UNCHANGED, WITH ADDITIONS FOR 'HIRED' STATUS */
     :root {
         --dark-serpent: #046241;
         --saffaron: #f5eedb;
@@ -48,17 +49,21 @@
     #position-filter { padding: 8px 12px; font-size: 0.95rem; border-radius: 6px; border: 1px solid #ccc; }
     .tabs { display: flex; border-bottom: 2px solid #eee; }
     .tab-btn { padding: 12px 20px; font-size: 1rem; font-weight: 600; cursor: pointer; background: none; border: none; border-bottom: 3px solid transparent; color: #888; }
-    .tab-btn.active { color: var(--dark-serpent); border-bottom-color: #e0b42c; }
-    .action-buttons button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; border-radius: 4px; border: none; color: white; }
-    .btn-passed { background-color: #28a745; }
-    .btn-hired { background-color: #007bff; }
-    .btn-failed { background-color: #dc3545; }
-    .btn-delete { background-color: #6c757d; }
-    .status { font-weight: bold; padding: 4px 8px; border-radius: 4px; color: white; text-align: center; }
-    .status-pending { background-color: #6c757d; }
-    .status-scheduled { background-color: #8e44ad; }
-    .status-hired { background-color: #007bff; }
-    .status-failed { background-color: #dc3545; }
+    .tab-btn.active { color: #046241; border-bottom-color: #d1b87a; } /* Restored Original Active Color */
+    
+    /* RESTORED ORIGINAL BUTTON STYLES & ADDED HIRED */
+    .action-buttons button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; border-radius: 4px; color: white; }
+    .btn-passed { background-color: #28a745; border: 1px solid #28a745; }
+    .btn-failed { background-color: #dc3545; border: 1px solid #dc3545; }
+    .btn-delete { background-color: #6c757d; border: 1px solid #6c757d; }
+    .btn-hired { background-color: #007bff; border: 1px solid #007bff; } /* New Hired Button Style */
+
+    /* RESTORED ORIGINAL STATUS STYLES & ADDED HIRED */
+    .status { font-weight: bold; }
+    .status-pending { color: #6c757d; }
+    .status-scheduled { color: #8e44ad; }
+    .status-failed { color: #dc3545; }
+    .status-hired { color: #007bff; } /* New Hired Status Style */
 
     #page-admin table tbody tr { transition: background-color: 0.3s ease; }
     #page-admin table tbody tr:hover { background-color: #f0f4f8; }
@@ -68,7 +73,7 @@
         #page-admin table tr { display: block; margin-bottom: 1.5rem; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); padding: 1rem; }
         #page-admin table td { display: flex; justify-content: space-between; align-items: center; text-align: right; border-bottom: 1px dotted #eee; padding: 0.75rem 0.5rem; }
         #page-admin table td:last-child { border-bottom: none; }
-        #page-admin table td::before { content: attr(data-label); font-weight: 600; text-align: left; padding-right: 1rem; color: var(--dark-serpent); }
+        #page-admin table td::before { content: attr(data-label); font-weight: 600; text-align: left; padding-right: 1rem; color: #046241; }
         #page-admin table td.action-buttons { justify-content: center; padding-top: 1rem; }
         #page-admin table td.action-buttons::before { display: none; }
     }
@@ -80,7 +85,7 @@
 </script>
 </head>
 <body id="page-admin">
-<!-- All modals are clean with no inline styles or onclick attributes -->
+<!-- Modals are clean with no inline styles -->
 <div class="modal" id="positions-modal">
     <div class="modal-content">
         <button type="button" class="modal-close">×</button>
@@ -139,7 +144,7 @@
     import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
     // --- CONFIGURATION ---
-    const YOUR_SINGLE_TEMPLATE_ID = 'template_z2c3kgl'; // IMPORTANT: Use your single master template ID here
+    const YOUR_SINGLE_TEMPLATE_ID = 'template_z2c3kgl'; // IMPORTANT: Use your single master template ID
     const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
     const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
     const firebaseConfig = {
@@ -156,14 +161,12 @@
     const db = getFirestore(app);
     emailjs.init(EMAILJS_PUBLIC_KEY);
 
-    // --- DOM REFERENCES ---
+    // --- DOM REFERENCES & STATE ---
     const applicationsListDiv = document.getElementById('applications-list');
     const positionFilter = document.getElementById('position-filter');
     const positionsListUL = document.getElementById('positions-list');
     const positionMgmtForm = document.getElementById('position-management-form');
     const scheduleForm = document.getElementById('schedule-form');
-
-    // --- STATE ---
     let allApplications = [];
     let activeTab = 'pending';
 
@@ -176,7 +179,6 @@
         const querySnapshot = await getDocs(query(collection(db, "positions"), orderBy("name")));
         positionsListUL.innerHTML = '';
         querySnapshot.forEach(doc => {
-            const li = document.createElement('li');
             li.className = 'position-tag';
             li.innerHTML = `<span>${doc.data().name}</span><button type="button" class="delete-position-btn" data-doc-id="${doc.id}">×</button>`;
             positionsListUL.appendChild(li);
@@ -208,13 +210,13 @@
             const status = data.status || 'Pending';
             const statusClass = `status-${status.toLowerCase()}`;
             
-            let statusHtml = `<span class="status ${statusClass}">${status}</span>`;
+            let statusHtml = `<strong class="status ${statusClass}">${status}</strong>`;
             if (status === 'Scheduled' && data.interviewDate) {
                 statusHtml += `<br><small>${data.interviewDate} @ ${data.interviewTime}</small>`;
             }
 
             let actionButtonsHtml = '';
-            // --- FIX: Added type="button" to all generated buttons ---
+            // FIX: All buttons have type="button" to prevent incorrect form validation popups.
             if (status === 'Pending') {
                 actionButtonsHtml = `<button type="button" class="btn-passed">Pass & Schedule</button><button type="button" class="btn-failed">Fail</button>`;
             } else if (status === 'Scheduled') {
@@ -282,16 +284,13 @@
             });
         });
 
-        // Position filter
         positionFilter.addEventListener('change', renderTable);
 
-        // Add a new job position
         positionMgmtForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const input = document.getElementById('new-position-name');
             const positionName = input.value.trim();
             if (!positionName) return;
-            
             input.disabled = true;
             await addDoc(collection(db, "positions"), { name: positionName, createdAt: serverTimestamp() });
             input.value = '';
@@ -300,7 +299,6 @@
             await populatePositionFilter();
         });
 
-        // Delete a job position
         positionsListUL.addEventListener('click', async (e) => {
             const deleteButton = e.target.closest('.delete-position-btn');
             if (deleteButton) {
@@ -334,39 +332,24 @@
             } else if (button.matches('.btn-hired')) {
                 if (!confirm(`This will mark ${name} as HIRED and send a job offer. Continue?`)) return;
                 button.textContent = "Sending..."; button.disabled = true;
-                const emailParams = {
-                    applicant_name: name,
-                    email_heading: "Congratulations! You've Received a Job Offer from Lifewood",
-                    email_body: `
-                        <p>Following your recent interview, we are thrilled to formally offer you the position of <strong>${position}</strong> at Lifewood!</p>
-                        <p>We were highly impressed with your skills and believe you will be a valuable asset to our team. This offer is contingent upon successful completion of any remaining background checks.</p>
-                        <p>Your hiring manager will be in contact with you shortly to discuss the next steps, including your start date, onboarding schedule, and to answer any questions you may have.</p>
-                        <p>Welcome to the team!</p>`
-                };
+                const emailParams = { applicant_name: name, email_heading: "Congratulations! You've Received a Job Offer from Lifewood", email_body: `<p>Following your recent interview, we are thrilled to formally offer you the position of <strong>${position}</strong> at Lifewood!</p><p>We were highly impressed with your skills and believe you will be a valuable asset to our team. This offer is contingent upon successful completion of any remaining background checks.</p><p>Your hiring manager will be in contact with you shortly to discuss the next steps, including your start date and onboarding schedule.</p><p>Welcome to the team!</p>`};
                 try {
                     await emailjs.send(EMAILJS_SERVICE_ID, YOUR_SINGLE_TEMPLATE_ID, emailParams);
                     await updateStatus('Hired');
                 } catch (err) {
-                    alert(`Failed to send email to ${name}. Please check console.`);
+                    alert(`Failed to send email to ${name}. Check console.`);
                     console.error(err);
                     button.textContent = "Mark as Hired"; button.disabled = false;
                 }
             } else if (button.matches('.btn-failed')) {
                 if (!confirm(`This will mark ${name} as FAILED and send a rejection email. Are you sure?`)) return;
                 button.textContent = "Sending..."; button.disabled = true;
-                const emailParams = {
-                    applicant_name: name,
-                    email_heading: "An Update on Your Lifewood Application",
-                    email_body: `
-                        <p>Thank you for your interest in the <strong>${position}</strong> role and for taking the time to connect with our team.</p>
-                        <p>While your qualifications are impressive, we have decided to move forward with other candidates whose experience more closely matches our current needs. This was a highly competitive search.</p>
-                        <p>We wish you the very best in your job search and encourage you to apply for other roles at Lifewood in the future.</p>`
-                };
+                const emailParams = { applicant_name: name, email_heading: "An Update on Your Lifewood Application", email_body: `<p>Thank you for your interest in the <strong>${position}</strong> role and for taking the time to connect with our team.</p><p>While your qualifications are impressive, we have decided to move forward with other candidates whose experience more closely matches our current needs. This was a highly competitive search.</p><p>We wish you the very best in your job search and encourage you to apply for other roles at Lifewood in the future.</p>`};
                 try {
                     await emailjs.send(EMAILJS_SERVICE_ID, YOUR_SINGLE_TEMPLATE_ID, emailParams);
                     await updateStatus('Failed');
                 } catch (err) {
-                    alert(`Failed to send email to ${name}. Please check console.`);
+                    alert(`Failed to send email to ${name}. Check console.`);
                     console.error(err);
                     button.textContent = "Fail"; button.disabled = false;
                 }
@@ -392,27 +375,11 @@
             const interviewDateVal = document.getElementById('schedule-date').value;
             const interviewTimeVal = document.getElementById('schedule-time').value;
 
-            const emailParams = {
-                applicant_name: applicant.name,
-                email_heading: "You're Invited for an Interview!",
-                email_body: `
-                    <p>We were very impressed with your application for the <strong>${applicant.position}</strong> position and would like to invite you for an interview.</p>
-                    <p>Your interview has been scheduled for the following time:</p>
-                    <div style="background-color: #ffffff; border: 1px solid #dcd1b5; border-radius: 8px; padding: 20px; margin: 24px 0;">
-                      <p style="margin: 0 0 12px 0;"><strong>Date:</strong> ${new Date(interviewDateVal + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                      <p style="margin: 0 0 12px 0;"><strong>Time:</strong> ${interviewTimeVal}</p>
-                      <p style="margin: 0;"><strong>Location:</strong><br/>Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug</p>
-                    </div>
-                    <p>If you have a conflict, please reply to this email. We look forward to meeting you.</p>`
-            };
+            const emailParams = { applicant_name: applicant.name, email_heading: "You're Invited for an Interview!", email_body: `<p>We were very impressed with your application for the <strong>${applicant.position}</strong> position and would like to invite you for an interview.</p><p>Your interview has been scheduled for the following time:</p><div style="background-color: #ffffff; border: 1px solid #dcd1b5; border-radius: 8px; padding: 20px; margin: 24px 0;"><p style="margin: 0 0 12px 0;"><strong>Date:</strong> ${new Date(interviewDateVal + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p><p style="margin: 0 0 12px 0;"><strong>Time:</strong> ${interviewTimeVal}</p><p style="margin: 0;"><strong>Location:</strong><br/>Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug</p></div><p>If you have a conflict, please reply to this email. We look forward to meeting you.</p>`};
 
             try {
                 await emailjs.send(EMAILJS_SERVICE_ID, YOUR_SINGLE_TEMPLATE_ID, emailParams);
-                await updateDoc(doc(db, 'applications', docId), { 
-                    status: 'Scheduled',
-                    interviewDate: interviewDateVal,
-                    interviewTime: interviewTimeVal,
-                });
+                await updateDoc(doc(db, 'applications', docId), { status: 'Scheduled', interviewDate: interviewDateVal, interviewTime: interviewTimeVal });
                 const appIndex = allApplications.findIndex(app => app.id === docId);
                 if(appIndex > -1) {
                     allApplications[appIndex].data.status = 'Scheduled';
@@ -430,7 +397,6 @@
             }
         });
         
-        // Logout
         document.getElementById('logout-button').addEventListener('click', () => {
             sessionStorage.removeItem('lifewood_admin_auth');
             window.location.replace('index.html');
