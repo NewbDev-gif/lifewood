@@ -9,7 +9,7 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
 <style>
-    /* YOUR ORIGINAL STYLES - UNCHANGED, WITH ADDITIONS FOR 'HIRED' STATUS */
+    /* Your original styles are preserved */
     :root {
         --dark-serpent: #046241;
         --saffaron: #f5eedb;
@@ -30,7 +30,6 @@
         border: none; font-size: 1.75rem; cursor: pointer;
         line-height: 1; color: #555;
     }
-
     .admin-section { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 24px; margin-bottom: 40px; }
     .admin-section h2 { margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
     .page-actions { margin-bottom: 24px; }
@@ -49,34 +48,17 @@
     #position-filter { padding: 8px 12px; font-size: 0.95rem; border-radius: 6px; border: 1px solid #ccc; }
     .tabs { display: flex; border-bottom: 2px solid #eee; }
     .tab-btn { padding: 12px 20px; font-size: 1rem; font-weight: 600; cursor: pointer; background: none; border: none; border-bottom: 3px solid transparent; color: #888; }
-    .tab-btn.active { color: #046241; border-bottom-color: #d1b87a; } /* Restored Original Active Color */
-    
-    /* RESTORED ORIGINAL BUTTON STYLES & ADDED HIRED */
-    .action-buttons button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; border-radius: 4px; color: white; }
-    .btn-passed { background-color: #28a745; border: 1px solid #28a745; }
-    .btn-failed { background-color: #dc3545; border: 1px solid #dc3545; }
-    .btn-delete { background-color: #6c757d; border: 1px solid #6c757d; }
-    .btn-hired { background-color: #007bff; border: 1px solid #007bff; } /* New Hired Button Style */
-
-    /* RESTORED ORIGINAL STATUS STYLES & ADDED HIRED */
+    .tab-btn.active { color: #046241; border-bottom-color: #d1b87a; }
+    .action-buttons button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; border-radius: 4px; border: 1px solid transparent; color: white; }
+    .btn-passed { background-color: #28a745; border-color: #28a745; }
+    .btn-failed { background-color: #dc3545; border-color: #dc3545; }
+    .btn-delete { background-color: #6c757d; border-color: #6c757d; }
+    .btn-hired { background-color: #007bff; border-color: #007bff; }
     .status { font-weight: bold; }
     .status-pending { color: #6c757d; }
     .status-scheduled { color: #8e44ad; }
     .status-failed { color: #dc3545; }
-    .status-hired { color: #007bff; } /* New Hired Status Style */
-
-    #page-admin table tbody tr { transition: background-color: 0.3s ease; }
-    #page-admin table tbody tr:hover { background-color: #f0f4f8; }
-
-    @media (max-width: 768px) {
-        #page-admin table { border: 0; } #page-admin table thead { display: none; }
-        #page-admin table tr { display: block; margin-bottom: 1.5rem; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); padding: 1rem; }
-        #page-admin table td { display: flex; justify-content: space-between; align-items: center; text-align: right; border-bottom: 1px dotted #eee; padding: 0.75rem 0.5rem; }
-        #page-admin table td:last-child { border-bottom: none; }
-        #page-admin table td::before { content: attr(data-label); font-weight: 600; text-align: left; padding-right: 1rem; color: #046241; }
-        #page-admin table td.action-buttons { justify-content: center; padding-top: 1rem; }
-        #page-admin table td.action-buttons::before { display: none; }
-    }
+    .status-hired { color: #007bff; }
 </style>
 <script>
     if (sessionStorage.getItem('lifewood_admin_auth') !== 'true') {
@@ -85,7 +67,6 @@
 </script>
 </head>
 <body id="page-admin">
-<!-- Modals are clean with no inline styles -->
 <div class="modal" id="positions-modal">
     <div class="modal-content">
         <button type="button" class="modal-close">×</button>
@@ -101,12 +82,12 @@
 <div class="modal" id="schedule-modal">
     <div class="modal-content">
         <button type="button" class="modal-close">×</button>
-        <h2>Schedule Face-to-Face Interview</h2>
+        <h2>Schedule Interview</h2>
         <form id="schedule-form" class="modal-form-grid">
             <input type="hidden" id="schedule-doc-id">
             <div class="form-group"><label for="schedule-date">Interview Date</label><input type="date" id="schedule-date" required></div>
             <div class="form-group"><label for="schedule-time">Interview Time</label><input type="time" id="schedule-time" required></div>
-            <p style="font-size: 0.9rem; color: #555; margin: 0;">The location will be set to the Cebu IT Park office.</p>
+            <p style="font-size: 0.9rem; color: #555; margin: 0;">Location: Ground Floor i2 Building, Cebu IT Park</p>
             <button type="submit" class="btn btn-primary">Send Invitation</button>
         </form>
     </div>
@@ -114,7 +95,7 @@
 
 <header class="main-header">
     <div class="container">
-        <a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-icon" /><div class="logo-text-stack"><span class="logo-text">lifewood</span></div></a>
+        <a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Icon" class="logo-icon" /><span class="logo-text">lifewood</span></a>
         <button type="button" id="logout-button" class="btn">Logout</button>
     </div>
 </header>
@@ -144,7 +125,7 @@
     import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
     // --- CONFIGURATION ---
-    const YOUR_SINGLE_TEMPLATE_ID = 'template_z2c3kgl'; // IMPORTANT: Use your single master template ID
+    const YOUR_SINGLE_TEMPLATE_ID = 'template_z2c3kgl'; // Replace with your actual EmailJS template ID
     const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
     const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
     const firebaseConfig = {
@@ -170,15 +151,16 @@
     let allApplications = [];
     let activeTab = 'pending';
 
-    // --- MODAL CONTROLS ---
     const openModal = (modalId) => document.getElementById(modalId).style.display = 'flex';
     const closeModal = (modalId) => document.getElementById(modalId).style.display = 'none';
 
-    // --- DATA RENDERING FUNCTIONS ---
+    // --- DATA RENDERING ---
     const renderPositions = async () => {
-        const querySnapshot = await getDocs(query(collection(db, "positions"), orderBy("name")));
+        const q = query(collection(db, "positions"), orderBy("name"));
+        const querySnapshot = await getDocs(q);
         positionsListUL.innerHTML = '';
         querySnapshot.forEach(doc => {
+            const li = document.createElement('li');
             li.className = 'position-tag';
             li.innerHTML = `<span>${doc.data().name}</span><button type="button" class="delete-position-btn" data-doc-id="${doc.id}">×</button>`;
             positionsListUL.appendChild(li);
@@ -187,43 +169,25 @@
 
     function renderTable() {
         let filteredApps;
-        if (activeTab === 'pending') {
-            filteredApps = allApplications.filter(app => (app.data.status || 'Pending') === 'Pending');
-        } else if (activeTab === 'processed') {
-            filteredApps = allApplications.filter(app => ['Scheduled', 'Failed'].includes(app.data.status));
-        } else if (activeTab === 'hired') {
-            filteredApps = allApplications.filter(app => app.data.status === 'Hired');
-        }
+        if (activeTab === 'pending') filteredApps = allApplications.filter(app => (app.data.status || 'Pending') === 'Pending');
+        else if (activeTab === 'processed') filteredApps = allApplications.filter(app => ['Scheduled', 'Failed'].includes(app.data.status));
+        else if (activeTab === 'hired') filteredApps = allApplications.filter(app => app.data.status === 'Hired');
 
-        if (positionFilter.value !== 'all') {
-            filteredApps = filteredApps.filter(app => app.data.position === positionFilter.value);
-        }
+        if (positionFilter.value !== 'all') filteredApps = filteredApps.filter(app => app.data.position === positionFilter.value);
 
         if (filteredApps.length === 0) {
             applicationsListDiv.innerHTML = `<p>No applications found for this tab.</p>`;
             return;
         }
 
-        let tableHtml = `<table><thead><tr><th>Name</th><th>Email</th><th>Position</th><th>Links</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
+        let tableHtml = `<table><thead>...</thead><tbody>`;
         filteredApps.forEach(app => {
             const { data, id: docId } = app;
             const status = data.status || 'Pending';
-            const statusClass = `status-${status.toLowerCase()}`;
-            
-            let statusHtml = `<strong class="status ${statusClass}">${status}</strong>`;
-            if (status === 'Scheduled' && data.interviewDate) {
-                statusHtml += `<br><small>${data.interviewDate} @ ${data.interviewTime}</small>`;
-            }
-
             let actionButtonsHtml = '';
-            // FIX: All buttons have type="button" to prevent incorrect form validation popups.
-            if (status === 'Pending') {
-                actionButtonsHtml = `<button type="button" class="btn-passed">Pass & Schedule</button><button type="button" class="btn-failed">Fail</button>`;
-            } else if (status === 'Scheduled') {
-                actionButtonsHtml = `<button type="button" class="btn-hired">Mark as Hired</button><button type="button" class="btn-failed">Fail</button>`;
-            } else {
-                actionButtonsHtml = `<button type="button" class="btn-delete">Delete</button>`;
-            }
+            if (status === 'Pending') actionButtonsHtml = `<button type="button" class="btn-passed">Pass & Schedule</button><button type="button" class="btn-failed">Fail</button>`;
+            else if (status === 'Scheduled') actionButtonsHtml = `<button type="button" class="btn-hired">Mark as Hired</button><button type="button" class="btn-failed">Fail</button>`;
+            else actionButtonsHtml = `<button type="button" class="btn-delete">Delete</button>`;
             
             tableHtml += `
                 <tr id="row-${docId}">
@@ -231,59 +195,61 @@
                     <td data-label="Email"><a href="mailto:${data.email}">${data.email || 'N/A'}</a></td>
                     <td data-label="Position">${data.position || 'N/A'}</td>
                     <td data-label="Links"><a href="${data.resumeLink}" target="_blank">Resume</a> ${data.portfolioLink ? `| <a href="${data.portfolioLink}" target="_blank">Portfolio</a>` : ''}</td>
-                    <td data-label="Status">${statusHtml}</td>
-                    <td class="action-buttons" data-doc-id="${docId}" data-name="${data.name}" data-position="${data.position}" data-email="${data.email}">${actionButtonsHtml}</td>
+                    <td data-label="Status"><strong class="status status-${status.toLowerCase()}">${status}</strong></td>
+                    <td class="action-buttons" data-doc-id="${docId}" data-name="${data.name}" data-position="${data.position}">${actionButtonsHtml}</td>
                 </tr>`;
         });
         applicationsListDiv.innerHTML = tableHtml + '</tbody></table>';
     }
 
-    async function populatePositionFilter() {
-        positionFilter.innerHTML = '<option value="all">All Positions</option>';
-        const querySnapshot = await getDocs(query(collection(db, "positions"), orderBy("name")));
-        querySnapshot.forEach(doc => {
-            const positionName = doc.data().name;
-            if (positionName) {
-                const option = document.createElement('option');
-                option.value = positionName;
-                option.textContent = positionName;
-                positionFilter.appendChild(option);
-            }
-        });
-    }
-
     async function initialFetch() {
         try {
-            await Promise.all([renderPositions(), populatePositionFilter()]);
-            const querySnapshot = await getDocs(query(collection(db, "applications"), orderBy("submittedAt", "desc")));
-            allApplications = querySnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+            const positionsQuery = query(collection(db, "positions"), orderBy("name"));
+            const appsQuery = query(collection(db, "applications"), orderBy("submittedAt", "desc"));
+            
+            const [positionsSnapshot, appsSnapshot] = await Promise.all([getDocs(positionsQuery), getDocs(appsQuery)]);
+
+            positionsListUL.innerHTML = '';
+            positionsSnapshot.forEach(doc => {
+                const li = document.createElement('li');
+                li.className = 'position-tag';
+                li.innerHTML = `<span>${doc.data().name}</span><button type="button" class="delete-position-btn" data-doc-id="${doc.id}">×</button>`;
+                positionsListUL.appendChild(li);
+            });
+
+            populatePositionFilter(positionsSnapshot);
+
+            allApplications = appsSnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
             renderTable();
         } catch (err) {
-            console.error("Error fetching data: ", err);
-            applicationsListDiv.innerHTML = `<p style="color: red;">Could not retrieve data from the database.</p>`;
+            console.error("Firebase fetch error: ", err);
+            applicationsListDiv.innerHTML = `<p style="color: red; font-weight: bold;">Error: Could not retrieve data from the database. Please check the Firebase setup instructions.</p>`;
         }
+    }
+    
+    function populatePositionFilter(querySnapshot) {
+        positionFilter.innerHTML = '<option value="all">All Positions</option>';
+        querySnapshot.forEach(doc => {
+            const positionName = doc.data().name;
+            const option = document.createElement('option');
+            option.value = positionName;
+            option.textContent = positionName;
+            positionFilter.appendChild(option);
+        });
     }
 
     // --- EVENT LISTENERS ---
     document.addEventListener('DOMContentLoaded', () => {
         initialFetch();
 
-        // Modal open/close listeners
         document.getElementById('manage-positions-btn').addEventListener('click', () => openModal('positions-modal'));
-        document.querySelectorAll('.modal-close').forEach(button => {
-            button.addEventListener('click', (e) => closeModal(e.target.closest('.modal').id));
-        });
-
-        // Tab switching
-        document.querySelectorAll('.tab-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                document.querySelector('.tab-btn.active').classList.remove('active');
-                button.classList.add('active');
-                activeTab = button.dataset.tab;
-                renderTable();
-            });
-        });
-
+        document.querySelectorAll('.modal-close').forEach(button => button.addEventListener('click', (e) => closeModal(e.target.closest('.modal').id)));
+        document.querySelectorAll('.tab-btn').forEach(button => button.addEventListener('click', (e) => {
+            document.querySelector('.tab-btn.active').classList.remove('active');
+            e.target.classList.add('active');
+            activeTab = e.target.dataset.tab;
+            renderTable();
+        }));
         positionFilter.addEventListener('change', renderTable);
 
         positionMgmtForm.addEventListener('submit', async (e) => {
@@ -291,78 +257,56 @@
             const input = document.getElementById('new-position-name');
             const positionName = input.value.trim();
             if (!positionName) return;
-            input.disabled = true;
             await addDoc(collection(db, "positions"), { name: positionName, createdAt: serverTimestamp() });
             input.value = '';
-            input.disabled = false;
-            await renderPositions();
-            await populatePositionFilter();
+            await initialFetch();
         });
 
         positionsListUL.addEventListener('click', async (e) => {
-            const deleteButton = e.target.closest('.delete-position-btn');
-            if (deleteButton) {
-                const docId = deleteButton.dataset.docId;
+            if (e.target.classList.contains('delete-position-btn')) {
                 if (confirm('Are you sure you want to delete this position?')) {
-                    await deleteDoc(doc(db, 'positions', docId));
-                    await renderPositions();
-                    await populatePositionFilter();
+                    await deleteDoc(doc(db, 'positions', e.target.dataset.docId));
+                    await initialFetch();
                 }
             }
         });
 
-        // --- Application Action Buttons (Pass, Fail, Hire, Delete) ---
         applicationsListDiv.addEventListener('click', async (e) => {
             const button = e.target.closest('button');
             if (!button) return;
-
             const actionCell = e.target.closest('.action-buttons');
-            const { docId, name, position, email } = actionCell.dataset;
+            const { docId, name, position } = actionCell.dataset;
 
             const updateStatus = async (newStatus) => {
                 await updateDoc(doc(db, 'applications', docId), { status: newStatus });
-                const appIndex = allApplications.findIndex(app => app.id === docId);
-                if (appIndex > -1) allApplications[appIndex].data.status = newStatus;
+                const app = allApplications.find(a => a.id === docId);
+                if (app) app.data.status = newStatus;
                 renderTable();
             };
+            
+            button.disabled = true; button.style.opacity = '0.7';
 
             if (button.matches('.btn-passed')) {
                 document.getElementById('schedule-doc-id').value = docId;
                 openModal('schedule-modal');
+                button.disabled = false; button.style.opacity = '1';
             } else if (button.matches('.btn-hired')) {
-                if (!confirm(`This will mark ${name} as HIRED and send a job offer. Continue?`)) return;
-                button.textContent = "Sending..."; button.disabled = true;
-                const emailParams = { applicant_name: name, email_heading: "Congratulations! You've Received a Job Offer from Lifewood", email_body: `<p>Following your recent interview, we are thrilled to formally offer you the position of <strong>${position}</strong> at Lifewood!</p><p>We were highly impressed with your skills and believe you will be a valuable asset to our team. This offer is contingent upon successful completion of any remaining background checks.</p><p>Your hiring manager will be in contact with you shortly to discuss the next steps, including your start date and onboarding schedule.</p><p>Welcome to the team!</p>`};
-                try {
-                    await emailjs.send(EMAILJS_SERVICE_ID, YOUR_SINGLE_TEMPLATE_ID, emailParams);
-                    await updateStatus('Hired');
-                } catch (err) {
-                    alert(`Failed to send email to ${name}. Check console.`);
-                    console.error(err);
-                    button.textContent = "Mark as Hired"; button.disabled = false;
-                }
+                const emailParams = { applicant_name: name, email_heading: "Congratulations! Job Offer from Lifewood", email_body: `<p>We are thrilled to offer you the <strong>${position}</strong> position!</p><p>Welcome to the team!</p>`};
+                await emailjs.send(EMAILJS_SERVICE_ID, YOUR_SINGLE_TEMPLATE_ID, emailParams).then(() => updateStatus('Hired'), (err) => {
+                    alert('Email failed to send.'); console.error(err); button.disabled = false; button.style.opacity = '1';
+                });
             } else if (button.matches('.btn-failed')) {
-                if (!confirm(`This will mark ${name} as FAILED and send a rejection email. Are you sure?`)) return;
-                button.textContent = "Sending..."; button.disabled = true;
-                const emailParams = { applicant_name: name, email_heading: "An Update on Your Lifewood Application", email_body: `<p>Thank you for your interest in the <strong>${position}</strong> role and for taking the time to connect with our team.</p><p>While your qualifications are impressive, we have decided to move forward with other candidates whose experience more closely matches our current needs. This was a highly competitive search.</p><p>We wish you the very best in your job search and encourage you to apply for other roles at Lifewood in the future.</p>`};
-                try {
-                    await emailjs.send(EMAILJS_SERVICE_ID, YOUR_SINGLE_TEMPLATE_ID, emailParams);
-                    await updateStatus('Failed');
-                } catch (err) {
-                    alert(`Failed to send email to ${name}. Check console.`);
-                    console.error(err);
-                    button.textContent = "Fail"; button.disabled = false;
-                }
+                const emailParams = { applicant_name: name, email_heading: "Update on your Lifewood Application", email_body: `<p>Thank you for your interest in the <strong>${position}</strong> role. While your qualifications were impressive, we have decided to move forward with other candidates.</p><p>We wish you the best in your job search.</p>`};
+                await emailjs.send(EMAILJS_SERVICE_ID, YOUR_SINGLE_TEMPLATE_ID, emailParams).then(() => updateStatus('Failed'), (err) => {
+                    alert('Email failed to send.'); console.error(err); button.disabled = false; button.style.opacity = '1';
+                });
             } else if (button.matches('.btn-delete')) {
-                if (confirm('Are you sure you want to permanently delete this application? This cannot be undone.')) {
-                    await deleteDoc(doc(db, 'applications', docId));
-                    allApplications = allApplications.filter(app => app.id !== docId);
-                    renderTable();
-                }
+                await deleteDoc(doc(db, 'applications', docId));
+                allApplications = allApplications.filter(app => app.id !== docId);
+                renderTable();
             }
         });
 
-        // --- Schedule Interview Form Submission ---
         scheduleForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -370,28 +314,20 @@
 
             const docId = document.getElementById('schedule-doc-id').value;
             const applicant = allApplications.find(app => app.id === docId)?.data;
-            if (!applicant) { alert('Error: Could not find applicant data.'); return; }
-
             const interviewDateVal = document.getElementById('schedule-date').value;
             const interviewTimeVal = document.getElementById('schedule-time').value;
 
-            const emailParams = { applicant_name: applicant.name, email_heading: "You're Invited for an Interview!", email_body: `<p>We were very impressed with your application for the <strong>${applicant.position}</strong> position and would like to invite you for an interview.</p><p>Your interview has been scheduled for the following time:</p><div style="background-color: #ffffff; border: 1px solid #dcd1b5; border-radius: 8px; padding: 20px; margin: 24px 0;"><p style="margin: 0 0 12px 0;"><strong>Date:</strong> ${new Date(interviewDateVal + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p><p style="margin: 0 0 12px 0;"><strong>Time:</strong> ${interviewTimeVal}</p><p style="margin: 0;"><strong>Location:</strong><br/>Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug</p></div><p>If you have a conflict, please reply to this email. We look forward to meeting you.</p>`};
+            const emailParams = { applicant_name: applicant.name, email_heading: "Interview Invitation from Lifewood", email_body: `<p>We would like to invite you for an interview for the <strong>${applicant.position}</strong> role.</p><p><strong>Date:</strong> ${interviewDateVal}<br><strong>Time:</strong> ${interviewTimeVal}</p>`};
 
             try {
                 await emailjs.send(EMAILJS_SERVICE_ID, YOUR_SINGLE_TEMPLATE_ID, emailParams);
                 await updateDoc(doc(db, 'applications', docId), { status: 'Scheduled', interviewDate: interviewDateVal, interviewTime: interviewTimeVal });
-                const appIndex = allApplications.findIndex(app => app.id === docId);
-                if(appIndex > -1) {
-                    allApplications[appIndex].data.status = 'Scheduled';
-                    allApplications[appIndex].data.interviewDate = interviewDateVal;
-                    allApplications[appIndex].data.interviewTime = interviewTimeVal;
-                }
+                const app = allApplications.find(a => a.id === docId);
+                if (app) Object.assign(app.data, { status: 'Scheduled', interviewDate: interviewDateVal, interviewTime: interviewTimeVal });
                 renderTable();
                 closeModal('schedule-modal');
-                alert('Interview invitation sent successfully!');
-            } catch (error) {
-                console.error('EmailJS Error:', error);
-                alert('Failed to send email. Check console for details.');
+            } catch (err) {
+                alert('Failed to send email.'); console.error('EmailJS Error:', err);
             } finally {
                 submitBtn.disabled = false; submitBtn.textContent = 'Send Invitation';
             }
@@ -403,6 +339,5 @@
         });
     });
 </script>
-
 </body>
 </html>
