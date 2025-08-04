@@ -14,6 +14,35 @@
             --white: #ffffff;
         }
 
+        /* --- START: PAGE BUTTON FIX --- */
+        /* These specific rules override the external template and make the main action buttons visible and clickable. */
+        #manage-positions-btn, #logout-button {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid var(--dark-serpent);
+        }
+        #manage-positions-btn {
+            background-color: var(--dark-serpent);
+            color: var(--white);
+        }
+        #manage-positions-btn:hover {
+            background-color: #1a472a;
+            border-color: #1a472a;
+        }
+        #logout-button {
+            background-color: transparent;
+            color: var(--dark-serpent);
+        }
+        #logout-button:hover {
+            background-color: var(--dark-serpent);
+            color: var(--white);
+        }
+        /* --- END: PAGE BUTTON FIX --- */
+        
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(19, 48, 32, 0.85); backdrop-filter: blur(4px);
@@ -106,17 +135,13 @@
 </head>
 <body id="page-admin">
 
-    <!-- MODAL HTML IS NO LONGER HERE -->
-
     <header class="main-header"><div class="container"><a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-icon" /><div class="logo-text-stack"><span class="logo-text">lifewood</span></div></a><button id="logout-button" class="btn">Logout</button></div></header>
     <main><section><div class="container"><div class="admin-section"><div class="page-actions"><button id="manage-positions-btn" class="btn btn-primary">Manage Job Positions</button></div><h2>Submitted Applications</h2><div class="filter-controls"><div class="position-filter-container"><label for="position-filter">Filter by Position:</label><select id="position-filter"><option value="all">All Positions</option></select></div><div class="tabs"><button class="tab-btn active" data-tab="pending">Pending</button><button class="tab-btn" data-tab="processed">Processed</button></div></div><div id="applications-list"><p>Loading applications...</p></div></div></div></section></main>
 
-    <!-- START: MODAL HTML MOVED HERE -->
     <!-- By placing the modals at the end of the body, they will naturally render on top of all other content. -->
     <div class="modal" id="positions-modal"><div class="modal-content"><button class="modal-close">×</button><h2>Manage Job Positions</h2><form id="position-management-form"><input type="text" id="new-position-name" placeholder="Enter new job title" required><button type="submit" class="btn btn-primary">Add Position</button></form><ul id="positions-list"></ul></div></div>
     <div class="modal" id="schedule-modal"><div class="modal-content"><button class="modal-close">×</button><h2>Schedule Interview</h2><form id="schedule-form"><input type="hidden" id="schedule-doc-id"><div class="form-group"><label for="schedule-date">Interview Date</label><input type="date" id="schedule-date" required></div><div class="form-group"><label for="schedule-time">Interview Time</label><input type="time" id="schedule-time" required></div><button type="submit" class="btn btn-primary">Send Invitation</button></form></div></div>
     <div class="modal" id="hired-modal"><div class="modal-content"><button class="modal-close">×</button><h3>Send Job Offer</h3><form id="hired-form"><input type="hidden" id="hired-doc-id"><div class="form-group"><label for="hired-message">Next Steps / Offer Details</label><textarea id="hired-message" rows="6" placeholder="e.g., Please confirm your acceptance by [Date]. We will then send over the official contract and onboarding documents." required></textarea></div><button type="submit" class="btn btn-primary">Send Offer</button></form></div></div>
-    <!-- END: MODAL HTML MOVED HERE -->
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
