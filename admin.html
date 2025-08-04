@@ -26,8 +26,6 @@
         line-height: 1; color: #555;
     }
 
-    /* === FIX: Make Admin Modals Visible === */
-    /* This rule overrides the animation styles from style.css that made the content invisible */
     body#page-admin .modal .modal-content {
         opacity: 1;
         transform: none;
@@ -53,13 +51,18 @@
     .tab-btn { padding: 12px 20px; font-size: 1rem; font-weight: 600; cursor: pointer; background: none; border: none; border-bottom: 3px solid transparent; color: #888; }
     .tab-btn.active { color: var(--dark-serpent); border-bottom-color: var(--saffaron); }
     .action-buttons button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; border-radius: 4px; }
+    
+    /* Button and Status Colors */
     .btn-passed { background-color: #28a745; color: white; border: 1px solid #28a745; }
     .btn-failed { background-color: #dc3545; color: white; border: 1px solid #dc3545; }
     .btn-delete { background-color: #6c757d; color: white; border: 1px solid #6c757d; }
+    .btn-hired { background-color: #007bff; color: white; border: 1px solid #007bff; } /* New Hired Button */
+
     .status { font-weight: bold; }
     .status-pending { color: #6c757d; }
     .status-scheduled { color: #8e44ad; }
     .status-failed { color: #dc3545; }
+    .status-hired { color: #007bff; } /* New Hired Status Color */
 
     #page-admin table tbody tr { transition: background-color 0.3s ease; }
     #page-admin table tbody tr:hover { background-color: #f0f4f8; }
@@ -136,9 +139,7 @@
     import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
     const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
-    // --- UPDATED: Use a single, universal template ID ---
-    // Make sure to replace this with the actual ID of the new template you create in EmailJS
-    const EMAILJS_UNIVERSAL_TEMPLATE_ID = 'template_jfzey48'; 
+    const EMAILJS_UNIVERSAL_TEMPLATE_ID = 'YOUR_UNIVERSAL_TEMPLATE_ID'; 
     const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
     
     const firebaseConfig = {
@@ -218,12 +219,21 @@
                 const date = new Date(data.interviewDate + 'T00:00:00');
                 statusHtml += `<br><small>${date.toLocaleDateString()} @ ${data.interviewTime}</small>`;
             }
+            
+            // --- UPDATED: Action Buttons Logic ---
             let actionButtonsHtml = '';
-            if (data.status === 'Pending') {
-                actionButtonsHtml = `<button class="btn-passed">Pass & Schedule</button><button class="btn-failed">Fail</button>`;
-            } else {
-                actionButtonsHtml = `<button class="btn-delete">Delete</button>`;
+            switch(data.status) {
+                case 'Pending':
+                    actionButtonsHtml = `<button class="btn-passed">Pass & Schedule</button><button class="btn-failed">Fail</button>`;
+                    break;
+                case 'Scheduled':
+                    actionButtonsHtml = `<button class="btn-hired">Mark as Hired</button><button class="btn-failed">Fail</button><button class="btn-delete">Delete</button>`;
+                    break;
+                default: // 'Failed', 'Hired', or any other status
+                    actionButtonsHtml = `<button class="btn-delete">Delete</button>`;
+                    break;
             }
+
             tableHtml += `<tr id="row-${docId}"><td data-label="Name">${data.name||'N/A'}</td><td data-label="Email"><a href="mailto:${data.email}">${data.email||'N/A'}</a></td><td data-label="Position">${data.position||'N/A'}</td><td data-label="Links"><a href="${data.resumeLink}" target="_blank">Resume</a> ${data.portfolioLink?`| <a href="${data.portfolioLink}" target="_blank">Portfolio</a>`:''}</td><td data-label="Status">${statusHtml}</td><td class="action-buttons" data-doc-id="${docId}">${actionButtonsHtml}</td></tr>`;
         });
         applicationsListDiv.innerHTML = tableHtml + '</tbody></table>';
@@ -284,6 +294,36 @@
             document.getElementById('schedule-doc-id').value = docId;
             window.openModal('schedule-modal');
 
+        } else if (button.matches('.btn-hired')) { // --- NEW: Hired Button Logic ---
+            if (!confirm(`This will mark ${appData.name} as HIRED and send an offer email. Are you sure?`)) return;
+            button.disabled = true;
+
+            const hiredMessage = `We are thrilled to offer you the <strong>${appData.position}</strong> position at Lifewood! We were very impressed with your background and interview.<br><br>Welcome to the team! Please expect a follow-up email from our HR department within the next two business days with your official offer letter and onboarding documents.`;
+
+            const templateParams = {
+                applicant_name: appData.name,
+                applicant_email: appData.email,
+                applicant_position: appData.position,
+                email_subject: `Job Offer from Lifewood for the ${appData.position} Role`,
+                email_body_message: hiredMessage
+            };
+
+            try {
+                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_UNIVERSAL_TEMPLATE_ID, templateParams);
+                await updateDoc(doc(db, 'applications', docId), { status: 'Hired' });
+                
+                const appIndex = allApplications.findIndex(app => app.id === docId);
+                if(appIndex > -1) allApplications[appIndex].data.status = 'Hired';
+                
+                renderTable();
+                alert('Offer email sent and applicant marked as Hired!');
+
+            } catch (error) {
+                console.error('EmailJS Error:', error);
+                alert('Failed to send offer email. Please check the console.');
+                button.disabled = false; // Re-enable on error
+            }
+
         } else if (button.matches('.btn-failed')) {
             if (!confirm(`This will mark ${appData.name} as Failed and send a rejection email. Are you sure?`)) return;
             button.disabled = true;
@@ -319,7 +359,7 @@
                 const appIndex = allApplications.findIndex(app => app.id === docId);
                 if (appIndex > -1) {
                     allApplications.splice(appIndex, 1);
-                    renderTable();
+                    renderTable(); // Optimistically update UI
                     await deleteDoc(doc(db, 'applications', docId));
                 }
             }
@@ -338,14 +378,7 @@
         const interviewDate = new Date(document.getElementById('schedule-date').value + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         const interviewTimeValue = document.getElementById('schedule-time').value;
 
-        // Construct the detailed message for a "Scheduled" email
-        const scheduleMessage = `
-            We were impressed with your application and would like to invite you for an interview.
-            <br><br>
-            <strong>Date:</strong> ${interviewDate}<br>
-            <strong>Time:</strong> ${interviewTimeValue}<br>
-            <strong>Location:</strong> Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug
-        `;
+        const scheduleMessage = `We were impressed with your application and would like to invite you for an interview.<br><br><strong>Date:</strong> ${interviewDate}<br><strong>Time:</strong> ${interviewTimeValue}<br><strong>Location:</strong> Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug`;
 
         const templateParams = {
             applicant_name: applicant.name,
