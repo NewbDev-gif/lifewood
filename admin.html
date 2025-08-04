@@ -9,21 +9,22 @@
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
-    <!-- GUARANTEED MODAL FIX: This style block overrides any conflicts from style.css -->
+    <!-- GUARANTEED MODAL FIX + HEADER COLOR FIX -->
     <style>
+        /* This style block ensures the modals work, regardless of style.css */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(19, 48, 32, 0.85); /* Dark overlay */
             backdrop-filter: blur(4px);
             display: none; /* Hidden by default */
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            padding: 20px;
+            justify-content: center; align-items: center; z-index: 2000; padding: 20px;
         }
-        /* This ensures the content box inside the modal is always visible when the modal is active */
         .modal-content {
-            display: block !important;
+            display: block !important; /* This is the key fix for visibility */
+        }
+        /* ADDED THIS BLOCK TO FIX HEADER COLORS */
+        .main-header .logo .logo-text {
+            color: #046241; /* This is the correct 'castleton-green' for the logo text */
         }
     </style>
 
@@ -78,7 +79,7 @@
     <!-- Main Page Structure -->
     <header class="main-header">
         <div class="container">
-            <a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Icon" class="logo-icon" />lifewood</a>
+            <a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-icon" /><div class="logo-text-stack"><span class="logo-text">lifewood</span></div></a>
             <button id="logout-button" class="btn">Logout</button>
         </div>
     </header>
@@ -111,7 +112,7 @@
             // =======================================================
             const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
             const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
-            const APPLICANT_TEMPLATE_ID = 'template_jfzey48'; // <-- PASTE YOUR MASTER TEMPLATE ID
+            const APPLICANT_TEMPLATE_ID = 'YOUR_MASTER_TEMPLATE_ID_HERE'; // <-- PASTE YOUR MASTER TEMPLATE ID
 
             const firebaseConfig = { apiKey: "AIzaSyDfeMg7BzcR1UvsZtFv4SQQtfJZWSdsGxY", authDomain: "lifewood-420.firebaseapp.com", projectId: "lifewood-420", storageBucket: "lifewood-420.firebasestorage.app", messagingSenderId: "277748825194", appId: "1:277748825194:web:a39e906c4bdf3417e25e13" };
 
