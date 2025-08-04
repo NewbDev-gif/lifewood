@@ -536,8 +536,3 @@ a {
     opacity: 1;
     transform: translateY(0);
 }
-/* Add this rule to the <style> block in your admin.html */
-    body#page-admin .modal .modal-content {
-        opacity: 1;
-        transform: none;
-    }
