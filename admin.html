@@ -74,10 +74,10 @@
 </script>
 </head>
 <body id="page-admin">
-Generated code
-<div class="modal" id="positions-modal" style="display:none;">
+
+<div class="modal" id="positions-modal">
     <div class="modal-content">
-        <button class="modal-close" onclick="window.closeModal('positions-modal')">×</button>
+        <button class="modal-close">×</button>
         <h2>Manage Job Positions</h2>
         <form id="position-management-form">
             <input type="text" id="new-position-name" placeholder="Enter new job title" required>
@@ -87,9 +87,9 @@ Generated code
     </div>
 </div>
 
-<div class="modal" id="schedule-modal" style="display:none;">
+<div class="modal" id="schedule-modal">
     <div class="modal-content">
-        <button class="modal-close" onclick="window.closeModal('schedule-modal')">×</button>
+        <button class="modal-close">×</button>
         <h2>Schedule Face-to-Face Interview</h2>
         <form id="schedule-form" class="modal-form-grid">
             <input type="hidden" id="schedule-doc-id">
@@ -154,8 +154,8 @@ Generated code
     let allApplications = []; 
     let activeTab = 'pending';
     
-    window.openModal = (modalId) => document.getElementById(modalId).style.display = 'flex';
-    window.closeModal = (modalId) => document.getElementById(modalId).style.display = 'none';
+    const openModal = (modalId) => document.getElementById(modalId).style.display = 'flex';
+    const closeModal = (modalId) => document.getElementById(modalId).style.display = 'none';
 
     const positionsCollection = collection(db, "positions");
     const renderPositions = async () => {
@@ -250,8 +250,19 @@ Generated code
         }
     }
 
+    // --- Event Listeners ---
+    
     document.getElementById('manage-positions-btn').addEventListener('click', () => {
-        window.openModal('positions-modal');
+        openModal('positions-modal');
+    });
+
+    document.querySelectorAll('.modal-close').forEach(button => {
+        button.addEventListener('click', () => {
+            const modal = button.closest('.modal');
+            if (modal) {
+                closeModal(modal.id);
+            }
+        });
     });
     
     document.querySelectorAll('.tab-btn').forEach(button => {
@@ -274,7 +285,7 @@ Generated code
 
         if (button.matches('.btn-passed')) {
             document.getElementById('schedule-doc-id').value = docId;
-            window.openModal('schedule-modal');
+            openModal('schedule-modal');
         } else if (button.matches('.btn-failed')) {
             if (!confirm(`This will mark ${appData.name} as Failed. Are you sure?`)) return;
             button.disabled = true;
@@ -325,29 +336,4 @@ Generated code
             const appIndex = allApplications.findIndex(app => app.id === docId);
             if(appIndex > -1) {
                 allApplications[appIndex].data.status = 'Scheduled';
-                allApplications[appIndex].data.interviewDate = document.getElementById('schedule-date').value;
-                allApplications[appIndex].data.interviewTime = interviewDetails.interview_time;
-            }
-            
-            renderTable();
-            window.closeModal('schedule-modal');
-            alert('Interview invitation sent successfully!');
-        } catch (error) {
-            console.error('EmailJS Error:', error);
-            alert('Failed to send email. Check console for details.');
-        } finally {
-            submitBtn.disabled = false; submitBtn.textContent = 'Send Invitation';
-        }
-    });
-    
-    document.getElementById('logout-button').addEventListener('click', () => {
-        sessionStorage.removeItem('lifewood_admin_auth');
-        window.location.replace('index.html');
-    });
-
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-    initialFetch();
-</script>
-
-</body>
-</html>
+                all
