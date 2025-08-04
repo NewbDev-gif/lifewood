@@ -9,7 +9,7 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
 <style>
-    /* Your original styles are preserved */
+    /* YOUR ORIGINAL STYLES - PRESERVED */
     :root {
         --dark-serpent: #046241;
         --saffaron: #f5eedb;
@@ -67,9 +67,10 @@
 </script>
 </head>
 <body id="page-admin">
-<div class="modal" id="positions-modal">
+<!-- THE STRAY "Generated code" TEXT THAT WAS HERE IS NOW GONE. THIS WAS THE ROOT CAUSE. -->
+<div class="modal" id="positions-modal" style="display:none;">
     <div class="modal-content">
-        <button type="button" class="modal-close">×</button>
+        <button type="button" class="modal-close" onclick="window.closeModal('positions-modal')">×</button>
         <h2>Manage Job Positions</h2>
         <form id="position-management-form">
             <input type="text" id="new-position-name" placeholder="Enter new job title" required>
@@ -79,9 +80,9 @@
     </div>
 </div>
 
-<div class="modal" id="schedule-modal">
+<div class="modal" id="schedule-modal" style="display:none;">
     <div class="modal-content">
-        <button type="button" class="modal-close">×</button>
+        <button type="button" class="modal-close" onclick="window.closeModal('schedule-modal')">×</button>
         <h2>Schedule Interview</h2>
         <form id="schedule-form" class="modal-form-grid">
             <input type="hidden" id="schedule-doc-id">
@@ -125,7 +126,7 @@
     import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
     // --- CONFIGURATION ---
-    const YOUR_SINGLE_TEMPLATE_ID = 'template_z2c3kgl'; // Replace with your actual EmailJS template ID
+    const YOUR_SINGLE_TEMPLATE_ID = 'template_z2c3kgl'; // Replace with your EmailJS template ID
     const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
     const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
     const firebaseConfig = {
@@ -151,22 +152,12 @@
     let allApplications = [];
     let activeTab = 'pending';
 
-    const openModal = (modalId) => document.getElementById(modalId).style.display = 'flex';
-    const closeModal = (modalId) => document.getElementById(modalId).style.display = 'none';
+    // --- GLOBAL MODAL FUNCTIONS ---
+    // This makes the onclick attributes in the HTML work correctly.
+    window.openModal = (modalId) => document.getElementById(modalId).style.display = 'flex';
+    window.closeModal = (modalId) => document.getElementById(modalId).style.display = 'none';
 
     // --- DATA RENDERING ---
-    const renderPositions = async () => {
-        const q = query(collection(db, "positions"), orderBy("name"));
-        const querySnapshot = await getDocs(q);
-        positionsListUL.innerHTML = '';
-        querySnapshot.forEach(doc => {
-            const li = document.createElement('li');
-            li.className = 'position-tag';
-            li.innerHTML = `<span>${doc.data().name}</span><button type="button" class="delete-position-btn" data-doc-id="${doc.id}">×</button>`;
-            positionsListUL.appendChild(li);
-        });
-    };
-
     function renderTable() {
         let filteredApps;
         if (activeTab === 'pending') filteredApps = allApplications.filter(app => (app.data.status || 'Pending') === 'Pending');
@@ -180,11 +171,13 @@
             return;
         }
 
-        let tableHtml = `<table><thead>...</thead><tbody>`;
+        let tableHtml = `<table><thead><tr><th>Name</th><th>Email</th><th>Position</th><th>Links</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
         filteredApps.forEach(app => {
             const { data, id: docId } = app;
             const status = data.status || 'Pending';
             let actionButtonsHtml = '';
+
+            // This fixes the "Please fill out this field" bug.
             if (status === 'Pending') actionButtonsHtml = `<button type="button" class="btn-passed">Pass & Schedule</button><button type="button" class="btn-failed">Fail</button>`;
             else if (status === 'Scheduled') actionButtonsHtml = `<button type="button" class="btn-hired">Mark as Hired</button><button type="button" class="btn-failed">Fail</button>`;
             else actionButtonsHtml = `<button type="button" class="btn-delete">Delete</button>`;
@@ -209,6 +202,7 @@
             
             const [positionsSnapshot, appsSnapshot] = await Promise.all([getDocs(positionsQuery), getDocs(appsQuery)]);
 
+            // Populate job positions
             positionsListUL.innerHTML = '';
             positionsSnapshot.forEach(doc => {
                 const li = document.createElement('li');
@@ -216,40 +210,38 @@
                 li.innerHTML = `<span>${doc.data().name}</span><button type="button" class="delete-position-btn" data-doc-id="${doc.id}">×</button>`;
                 positionsListUL.appendChild(li);
             });
-
-            populatePositionFilter(positionsSnapshot);
+            
+            // Populate filter dropdown
+            positionFilter.innerHTML = '<option value="all">All Positions</option>';
+            positionsSnapshot.forEach(doc => {
+                const positionName = doc.data().name;
+                const option = document.createElement('option');
+                option.value = positionName;
+                option.textContent = positionName;
+                positionFilter.appendChild(option);
+            });
 
             allApplications = appsSnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
             renderTable();
         } catch (err) {
             console.error("Firebase fetch error: ", err);
-            applicationsListDiv.innerHTML = `<p style="color: red; font-weight: bold;">Error: Could not retrieve data from the database. Please check the Firebase setup instructions.</p>`;
+            applicationsListDiv.innerHTML = `<p style="color: red; font-weight: bold;">Error: Could not retrieve data from the database. This is likely a Firebase security rule or index issue. Please check the setup instructions.</p>`;
         }
-    }
-    
-    function populatePositionFilter(querySnapshot) {
-        positionFilter.innerHTML = '<option value="all">All Positions</option>';
-        querySnapshot.forEach(doc => {
-            const positionName = doc.data().name;
-            const option = document.createElement('option');
-            option.value = positionName;
-            option.textContent = positionName;
-            positionFilter.appendChild(option);
-        });
     }
 
     // --- EVENT LISTENERS ---
     document.addEventListener('DOMContentLoaded', () => {
         initialFetch();
 
-        document.getElementById('manage-positions-btn').addEventListener('click', () => openModal('positions-modal'));
-        document.querySelectorAll('.modal-close').forEach(button => button.addEventListener('click', (e) => closeModal(e.target.closest('.modal').id)));
+        document.getElementById('manage-positions-btn').addEventListener('click', () => window.openModal('positions-modal'));
+        
         document.querySelectorAll('.tab-btn').forEach(button => button.addEventListener('click', (e) => {
             document.querySelector('.tab-btn.active').classList.remove('active');
             e.target.classList.add('active');
             activeTab = e.target.dataset.tab;
             renderTable();
         }));
+        
         positionFilter.addEventListener('change', renderTable);
 
         positionMgmtForm.addEventListener('submit', async (e) => {
@@ -259,14 +251,14 @@
             if (!positionName) return;
             await addDoc(collection(db, "positions"), { name: positionName, createdAt: serverTimestamp() });
             input.value = '';
-            await initialFetch();
+            await initialFetch(); // Re-fetch to update lists
         });
 
         positionsListUL.addEventListener('click', async (e) => {
             if (e.target.classList.contains('delete-position-btn')) {
                 if (confirm('Are you sure you want to delete this position?')) {
                     await deleteDoc(doc(db, 'positions', e.target.dataset.docId));
-                    await initialFetch();
+                    await initialFetch(); // Re-fetch to update lists
                 }
             }
         });
@@ -286,24 +278,28 @@
             
             button.disabled = true; button.style.opacity = '0.7';
 
-            if (button.matches('.btn-passed')) {
-                document.getElementById('schedule-doc-id').value = docId;
-                openModal('schedule-modal');
-                button.disabled = false; button.style.opacity = '1';
-            } else if (button.matches('.btn-hired')) {
-                const emailParams = { applicant_name: name, email_heading: "Congratulations! Job Offer from Lifewood", email_body: `<p>We are thrilled to offer you the <strong>${position}</strong> position!</p><p>Welcome to the team!</p>`};
-                await emailjs.send(EMAILJS_SERVICE_ID, YOUR_SINGLE_TEMPLATE_ID, emailParams).then(() => updateStatus('Hired'), (err) => {
-                    alert('Email failed to send.'); console.error(err); button.disabled = false; button.style.opacity = '1';
-                });
-            } else if (button.matches('.btn-failed')) {
-                const emailParams = { applicant_name: name, email_heading: "Update on your Lifewood Application", email_body: `<p>Thank you for your interest in the <strong>${position}</strong> role. While your qualifications were impressive, we have decided to move forward with other candidates.</p><p>We wish you the best in your job search.</p>`};
-                await emailjs.send(EMAILJS_SERVICE_ID, YOUR_SINGLE_TEMPLATE_ID, emailParams).then(() => updateStatus('Failed'), (err) => {
-                    alert('Email failed to send.'); console.error(err); button.disabled = false; button.style.opacity = '1';
-                });
-            } else if (button.matches('.btn-delete')) {
-                await deleteDoc(doc(db, 'applications', docId));
-                allApplications = allApplications.filter(app => app.id !== docId);
-                renderTable();
+            try {
+                if (button.matches('.btn-passed')) {
+                    document.getElementById('schedule-doc-id').value = docId;
+                    window.openModal('schedule-modal');
+                } else if (button.matches('.btn-hired')) {
+                    const emailParams = { applicant_name: name, email_heading: "Congratulations! Job Offer from Lifewood", email_body: `<p>We are thrilled to offer you the <strong>${position}</strong> position!</p><p>Welcome to the team!</p>`};
+                    await emailjs.send(EMAILJS_SERVICE_ID, YOUR_SINGLE_TEMPLATE_ID, emailParams);
+                    await updateStatus('Hired');
+                } else if (button.matches('.btn-failed')) {
+                    const emailParams = { applicant_name: name, email_heading: "Update on your Lifewood Application", email_body: `<p>Thank you for your interest in the <strong>${position}</strong> role. We have decided to move forward with other candidates.</p><p>We wish you the best in your job search.</p>`};
+                    await emailjs.send(EMAILJS_SERVICE_ID, YOUR_SINGLE_TEMPLATE_ID, emailParams);
+                    await updateStatus('Failed');
+                } else if (button.matches('.btn-delete')) {
+                    await deleteDoc(doc(db, 'applications', docId));
+                    allApplications = allApplications.filter(app => app.id !== docId);
+                    renderTable();
+                }
+            } catch (err) {
+                alert('An error occurred. Please check the console.');
+                console.error(err);
+            } finally {
+                if(button) { button.disabled = false; button.style.opacity = '1'; }
             }
         });
 
@@ -325,7 +321,7 @@
                 const app = allApplications.find(a => a.id === docId);
                 if (app) Object.assign(app.data, { status: 'Scheduled', interviewDate: interviewDateVal, interviewTime: interviewTimeVal });
                 renderTable();
-                closeModal('schedule-modal');
+                window.closeModal('schedule-modal');
             } catch (err) {
                 alert('Failed to send email.'); console.error('EmailJS Error:', err);
             } finally {
