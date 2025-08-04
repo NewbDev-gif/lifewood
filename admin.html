@@ -14,47 +14,44 @@
             --white: #ffffff;
         }
 
-        /* --- START: PAGE BUTTON FIX --- */
-        /* These specific rules override the external template and make the main action buttons visible and clickable. */
+        /* --- START: DEFINITIVE BUTTON VISIBILITY FIX --- */
+        /* This block uses !important on every property to brute-force override
+           the aggressive external style.css and make the buttons visible and clickable. */
         #manage-positions-btn, #logout-button {
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 2px solid var(--dark-serpent);
+            display: inline-block !important;
+            padding: 10px 20px !important;
+            font-size: 0.95rem !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            border-radius: 6px !important;
+            transition: all 0.2s ease !important;
         }
+
         #manage-positions-btn {
-            background-color: var(--dark-serpent);
-            color: var(--white);
+            background-color: var(--dark-serpent) !important;
+            color: var(--white) !important;
+            border: 2px solid var(--dark-serpent) !important;
         }
-        #manage-positions-btn:hover {
-            background-color: #1a472a;
-            border-color: #1a472a;
-        }
+
         #logout-button {
-            background-color: transparent;
-            color: var(--dark-serpent);
+            background-color: transparent !important;
+            color: var(--dark-serpent) !important;
+            border: 2px solid var(--dark-serpent) !important;
         }
-        #logout-button:hover {
-            background-color: var(--dark-serpent);
-            color: var(--white);
-        }
-        /* --- END: PAGE BUTTON FIX --- */
-        
+        /* --- END: DEFINITIVE BUTTON VISIBILITY FIX --- */
+
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(19, 48, 32, 0.85); backdrop-filter: blur(4px);
             display: none; justify-content: center; align-items: center; 
-            z-index: 9999; /* High z-index ensures it's on top */
+            z-index: 9999;
             padding: 20px; box-sizing: border-box;
         }
         .modal-content {
             background: #fff; padding: 2rem; border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 100%;
             max-width: 500px; position: relative;
-            color: #333; /* Makes modal text visible */
+            color: #333;
         }
         .modal-close {
             position: absolute; top: 15px; right: 15px; background: none;
