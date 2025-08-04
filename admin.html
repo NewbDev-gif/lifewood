@@ -26,6 +26,13 @@
         line-height: 1; color: #555;
     }
 
+    /* === FIX: Make Admin Modals Visible === */
+    /* This rule overrides the animation styles from style.css that made the content invisible */
+    body#page-admin .modal .modal-content {
+        opacity: 1;
+        transform: none;
+    }
+
     .admin-section { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 24px; margin-bottom: 40px; }
     .admin-section h2 { margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
     .page-actions { margin-bottom: 24px; }
@@ -74,7 +81,7 @@
 </script>
 </head>
 <body id="page-admin">
-Generated code
+
 <div class="modal" id="positions-modal" style="display:none;">
     <div class="modal-content">
         <button class="modal-close" onclick="window.closeModal('positions-modal')">×</button>
@@ -129,8 +136,9 @@ Generated code
     import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
     const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
-    const EMAILJS_SCHEDULE_TEMPLATE_ID = 'template_jfzey48';
-    const EMAILJS_FAILED_TEMPLATE_ID = 'template_m5sztl8';
+    // --- UPDATED: Use a single, universal template ID ---
+    // Make sure to replace this with the actual ID of the new template you create in EmailJS
+    const EMAILJS_UNIVERSAL_TEMPLATE_ID = 'template_jfzey48'; 
     const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
     
     const firebaseConfig = {
@@ -275,13 +283,37 @@ Generated code
         if (button.matches('.btn-passed')) {
             document.getElementById('schedule-doc-id').value = docId;
             window.openModal('schedule-modal');
+
         } else if (button.matches('.btn-failed')) {
-            if (!confirm(`This will mark ${appData.name} as Failed. Are you sure?`)) return;
+            if (!confirm(`This will mark ${appData.name} as Failed and send a rejection email. Are you sure?`)) return;
             button.disabled = true;
-            await updateDoc(doc(db, 'applications', docId), { status: 'Failed' });
-            const appIndex = allApplications.findIndex(app => app.id === docId);
-            if(appIndex > -1) allApplications[appIndex].data.status = 'Failed';
-            renderTable();
+
+            const failMessage = `Thank you for your interest in the ${appData.position} position and for the time you've invested in this process. After careful consideration, we have decided to move forward with other candidates whose qualifications more closely match the requirements of the role at this time.<br><br>We wish you the best of luck in your job search.`;
+
+            const templateParams = {
+                applicant_name: appData.name,
+                applicant_email: appData.email,
+                applicant_position: appData.position,
+                email_subject: `Update on your application for the ${appData.position} role`,
+                email_body_message: failMessage
+            };
+
+            try {
+                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_UNIVERSAL_TEMPLATE_ID, templateParams);
+                await updateDoc(doc(db, 'applications', docId), { status: 'Failed' });
+                
+                const appIndex = allApplications.findIndex(app => app.id === docId);
+                if(appIndex > -1) allApplications[appIndex].data.status = 'Failed';
+                
+                renderTable();
+                alert('Rejection email sent successfully.');
+
+            } catch (error) {
+                console.error('EmailJS Error:', error);
+                alert('Failed to send rejection email. Check console for details.');
+                button.disabled = false;
+            }
+
         } else if (button.matches('.btn-delete')) {
             if (confirm('Are you sure you want to permanently delete this application?')) {
                 const appIndex = allApplications.findIndex(app => app.id === docId);
@@ -303,30 +335,40 @@ Generated code
         const applicant = allApplications.find(app => app.id === docId)?.data;
         if (!applicant) { alert('Error: Could not find applicant data.'); return; }
 
-        const interviewDetails = {
-            interview_date: new Date(document.getElementById('schedule-date').value + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-            interview_time: document.getElementById('schedule-time').value,
-            interview_mode: 'Face-to-Face',
-            interview_location: 'Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug',
+        const interviewDate = new Date(document.getElementById('schedule-date').value + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const interviewTimeValue = document.getElementById('schedule-time').value;
+
+        // Construct the detailed message for a "Scheduled" email
+        const scheduleMessage = `
+            We were impressed with your application and would like to invite you for an interview.
+            <br><br>
+            <strong>Date:</strong> ${interviewDate}<br>
+            <strong>Time:</strong> ${interviewTimeValue}<br>
+            <strong>Location:</strong> Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug
+        `;
+
+        const templateParams = {
             applicant_name: applicant.name,
             applicant_email: applicant.email,
-            applicant_position: applicant.position
+            applicant_position: applicant.position,
+            email_subject: `Interview Invitation for the ${applicant.position} Role`,
+            email_body_message: scheduleMessage
         };
 
         try {
-            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_SCHEDULE_TEMPLATE_ID, interviewDetails);
+            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_UNIVERSAL_TEMPLATE_ID, templateParams);
             
             await updateDoc(doc(db, 'applications', docId), { 
                 status: 'Scheduled',
                 interviewDate: document.getElementById('schedule-date').value,
-                interviewTime: interviewDetails.interview_time,
+                interviewTime: interviewTimeValue,
             });
 
             const appIndex = allApplications.findIndex(app => app.id === docId);
             if(appIndex > -1) {
                 allApplications[appIndex].data.status = 'Scheduled';
                 allApplications[appIndex].data.interviewDate = document.getElementById('schedule-date').value;
-                allApplications[appIndex].data.interviewTime = interviewDetails.interview_time;
+                allApplications[appIndex].data.interviewTime = interviewTimeValue;
             }
             
             renderTable();
