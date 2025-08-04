@@ -116,11 +116,37 @@
         let allApplications = []; 
         let activeTab = 'pending';
         
+        // --- START: MODIFIED MODAL LOGIC ---
         window.openModal = (modalId) => document.getElementById(modalId).style.display = 'flex';
         window.closeModal = (modalId) => {
              const modal = document.getElementById(modalId);
              if (modal) modal.style.display = 'none';
         };
+        
+        // Enhanced Modal Closing Logic (Close button, background click, Escape key)
+        document.addEventListener('click', (e) => {
+            // Close modal if the close button (×) is clicked
+            const closeButton = e.target.closest('.modal-close');
+            if (closeButton) {
+                window.closeModal(closeButton.closest('.modal').id);
+                return;
+            }
+            // Close modal if the outer background (the .modal element) is clicked
+            if (e.target.matches('.modal')) {
+                window.closeModal(e.target.id);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            // Close the currently open modal if the Escape key is pressed
+            if (e.key === 'Escape') {
+                const openModal = document.querySelector('.modal[style*="display: flex"]');
+                if (openModal) {
+                    window.closeModal(openModal.id);
+                }
+            }
+        });
+        // --- END: MODIFIED MODAL LOGIC ---
 
         async function sendApplicantEmail(type, appData, details = {}) {
             const templateParams = {
@@ -321,7 +347,7 @@
             });
         });
         positionFilter.addEventListener('change', renderTable);
-        document.querySelectorAll('.modal-close').forEach(button => button.addEventListener('click', () => window.closeModal(button.closest('.modal').id)));
+        // REMOVED old modal close handler from here. The new logic is at the top of the script.
         document.getElementById('logout-button').addEventListener('click', () => {
             sessionStorage.removeItem('lifewood_admin_auth');
             window.location.replace('index.html');
