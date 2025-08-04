@@ -14,23 +14,18 @@
             --white: #ffffff;
         }
 
-        .main-header {
-            /* This forces the header's z-index to be lower than the modal, overriding external stylesheets. */
-            z-index: 999 !important;
-        }
-        
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(19, 48, 32, 0.85); backdrop-filter: blur(4px);
             display: none; justify-content: center; align-items: center; 
-            z-index: 9999; /* High z-index to be on top of everything */
+            z-index: 9999; /* High z-index ensures it's on top */
             padding: 20px; box-sizing: border-box;
         }
         .modal-content {
             background: #fff; padding: 2rem; border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 100%;
             max-width: 500px; position: relative;
-            color: #333; /* This ensures text inside the modal is visible */
+            color: #333; /* Makes modal text visible */
         }
         .modal-close {
             position: absolute; top: 15px; right: 15px; background: none;
@@ -38,32 +33,22 @@
             line-height: 1; color: #555;
         }
 
-        /* --- START: MODAL BUTTON FIX --- */
-        /* This block creates specific styles for buttons inside the modal to override the generic template styles. */
+        /* Styles for buttons inside the modal to override the main template */
         .modal-content .btn {
-            background-color: var(--dark-serpent); /* Use your theme's primary color */
-            color: var(--white); /* Ensure text is visible */
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
+            background-color: var(--dark-serpent);
+            color: var(--white);
+            border: none; padding: 10px 20px; border-radius: 6px;
+            font-size: 1rem; font-weight: 600; cursor: pointer;
             transition: background-color 0.2s, transform 0.2s;
         }
-
         .modal-content .btn:hover {
-            background-color: #1a472a; /* A slightly lighter green for hover */
+            background-color: #1a472a;
             transform: translateY(-2px);
         }
-
         .modal-content .btn:disabled {
-            background-color: #cccccc;
-            color: #666666;
-            cursor: not-allowed;
-            transform: none;
+            background-color: #cccccc; color: #666666;
+            cursor: not-allowed; transform: none;
         }
-        /* --- END: MODAL BUTTON FIX --- */
 
         .admin-section { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 24px; margin-bottom: 40px; }
         .admin-section h2 { margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
@@ -121,12 +106,17 @@
 </head>
 <body id="page-admin">
 
-    <div class="modal" id="positions-modal"><div class="modal-content"><button class="modal-close">×</button><h2>Manage Job Positions</h2><form id="position-management-form"><input type="text" id="new-position-name" placeholder="Enter new job title" required><button type="submit" class="btn btn-primary">Add Position</button></form><ul id="positions-list"></ul></div></div>
-    <div class="modal" id="schedule-modal"><div class="modal-content"><button class="modal-close">×</button><h2>Schedule Interview</h2><form id="schedule-form"><input type="hidden" id="schedule-doc-id"><div class="form-group"><label for="schedule-date">Interview Date</label><input type="date" id="schedule-date" required></div><div class="form-group"><label for="schedule-time">Interview Time</label><input type="time" id="schedule-time" required></div><button type="submit" class="btn btn-primary">Send Invitation</button></form></div></div>
-    <div class="modal" id="hired-modal"><div class="modal-content"><button class="modal-close">×</button><h3>Send Job Offer</h3><form id="hired-form"><input type="hidden" id="hired-doc-id"><div class="form-group"><label for="hired-message">Next Steps / Offer Details</label><textarea id="hired-message" rows="6" placeholder="e.g., Please confirm your acceptance by [Date]. We will then send over the official contract and onboarding documents." required></textarea></div><button type="submit" class="btn btn-primary">Send Offer</button></form></div></div>
+    <!-- MODAL HTML IS NO LONGER HERE -->
 
     <header class="main-header"><div class="container"><a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-icon" /><div class="logo-text-stack"><span class="logo-text">lifewood</span></div></a><button id="logout-button" class="btn">Logout</button></div></header>
     <main><section><div class="container"><div class="admin-section"><div class="page-actions"><button id="manage-positions-btn" class="btn btn-primary">Manage Job Positions</button></div><h2>Submitted Applications</h2><div class="filter-controls"><div class="position-filter-container"><label for="position-filter">Filter by Position:</label><select id="position-filter"><option value="all">All Positions</option></select></div><div class="tabs"><button class="tab-btn active" data-tab="pending">Pending</button><button class="tab-btn" data-tab="processed">Processed</button></div></div><div id="applications-list"><p>Loading applications...</p></div></div></div></section></main>
+
+    <!-- START: MODAL HTML MOVED HERE -->
+    <!-- By placing the modals at the end of the body, they will naturally render on top of all other content. -->
+    <div class="modal" id="positions-modal"><div class="modal-content"><button class="modal-close">×</button><h2>Manage Job Positions</h2><form id="position-management-form"><input type="text" id="new-position-name" placeholder="Enter new job title" required><button type="submit" class="btn btn-primary">Add Position</button></form><ul id="positions-list"></ul></div></div>
+    <div class="modal" id="schedule-modal"><div class="modal-content"><button class="modal-close">×</button><h2>Schedule Interview</h2><form id="schedule-form"><input type="hidden" id="schedule-doc-id"><div class="form-group"><label for="schedule-date">Interview Date</label><input type="date" id="schedule-date" required></div><div class="form-group"><label for="schedule-time">Interview Time</label><input type="time" id="schedule-time" required></div><button type="submit" class="btn btn-primary">Send Invitation</button></form></div></div>
+    <div class="modal" id="hired-modal"><div class="modal-content"><button class="modal-close">×</button><h3>Send Job Offer</h3><form id="hired-form"><input type="hidden" id="hired-doc-id"><div class="form-group"><label for="hired-message">Next Steps / Offer Details</label><textarea id="hired-message" rows="6" placeholder="e.g., Please confirm your acceptance by [Date]. We will then send over the official contract and onboarding documents." required></textarea></div><button type="submit" class="btn btn-primary">Send Offer</button></form></div></div>
+    <!-- END: MODAL HTML MOVED HERE -->
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
