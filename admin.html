@@ -32,7 +32,7 @@
         .admin-section { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 24px; margin-bottom: 40px; }
         .admin-section h2 { margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         .page-actions { margin-bottom: 24px; }
-        .form-group { display: flex; flex-direction: column; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 1rem; }
         .form-group label { font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #555; }
         .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
         #position-management-form { display: flex; gap: 12px; margin-bottom: 20px; }
@@ -160,10 +160,12 @@
         
         async function populatePositionFilter() {
             const querySnapshot = await getDocs(query(collection(db, "positions"), orderBy("name")));
+            const currentVal = positionFilter.value;
             positionFilter.innerHTML = '<option value="all">All Positions</option>';
             querySnapshot.forEach(doc => {
                 positionFilter.add(new Option(doc.data().name, doc.data().name));
             });
+            positionFilter.value = currentVal;
         }
 
         function renderTable() {
