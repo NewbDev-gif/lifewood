@@ -8,7 +8,7 @@
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
-    <!-- YOUR ORIGINAL STYLES + THE NEW BUTTON AND TAB STYLES -->
+    <!-- STYLES WITH THE FIX -->
     <style>
         :root { /* Define CSS variables for easier theming if needed */
             --dark-serpent: #133020; /* Example color */
@@ -20,12 +20,19 @@
             display: none; justify-content: center; align-items: center; z-index: 1000;
             padding: 20px; box-sizing: border-box;
         }
+        
+        /* --- THIS IS THE CORRECTED STYLE FOR THE MODAL CONTENT --- */
         .modal-content {
-            display: block !important;
-            background: #fff; padding: 2rem; border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 100%;
-            max-width: 500px; position: relative;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+            position: relative;
         }
+        /* --- END OF CORRECTION --- */
+
         .modal-close {
             position: absolute; top: 15px; right: 15px; background: none;
             border: none; font-size: 1.75rem; cursor: pointer;
@@ -107,7 +114,7 @@
     <header class="main-header"><div class="container"><a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-icon" /><div class="logo-text-stack"><span class="logo-text">lifewood</span></div></a><button id="logout-button" class="btn">Logout</button></div></header>
     <main><section><div class="container"><div class="admin-section"><div class="page-actions"><button id="manage-positions-btn" class="btn btn-primary">Manage Job Positions</button></div><h2>Submitted Applications</h2><div class="filter-controls"><div class="position-filter-container"><label for="position-filter">Filter by Position:</label><select id="position-filter"><option value="all">All Positions</option></select></div><div class="tabs"><button class="tab-btn active" data-tab="pending">Pending</button><button class="tab-btn" data-tab="processed">Processed</button></div></div><div id="applications-list"><p>Loading applications...</p></div></div></div></section></main>
 
-    <!-- THE UPGRADED AND CORRECTED SCRIPT -->
+    <!-- THE SCRIPT (NO CHANGES NEEDED HERE) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
@@ -183,9 +190,6 @@
                 positionFilter.value = currentFilter;
             }
 
-            // ==========================================================
-            // ===== THIS IS THE CORRECTED RENDER TABLE FUNCTION ========
-            // ==========================================================
             function renderTable() {
                 let filteredApps = allApplications.filter(app => {
                     const status = app.data.status || 'Pending';
