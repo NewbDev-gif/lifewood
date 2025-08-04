@@ -54,7 +54,7 @@
     .status-scheduled { color: #8e44ad; }
     .status-failed { color: #dc3545; }
 
-    #page-admin table tbody tr { transition: background-color 0.3s ease; }
+    #page-admin table tbody tr { transition: background-color: 0.3s ease; }
     #page-admin table tbody tr:hover { background-color: #f0f4f8; }
 
     @media (max-width: 768px) {
@@ -74,8 +74,7 @@
 </script>
 </head>
 <body id="page-admin">
-
-<!-- **FIX:** Removed inline style="display:none;" and onclick="..." -->
+<!-- The stray "Generated code" text that was here has been REMOVED -->
 <div class="modal" id="positions-modal">
     <div class="modal-content">
         <button class="modal-close">×</button>
@@ -88,7 +87,6 @@
     </div>
 </div>
 
-<!-- **FIX:** Removed inline style="display:none;" and onclick="..." -->
 <div class="modal" id="schedule-modal">
     <div class="modal-content">
         <button class="modal-close">×</button>
@@ -156,7 +154,6 @@
     let allApplications = []; 
     let activeTab = 'pending';
     
-    // **FIX:** These functions are now properly defined and used within the module
     const openModal = (modalId) => document.getElementById(modalId).style.display = 'flex';
     const closeModal = (modalId) => document.getElementById(modalId).style.display = 'none';
 
@@ -253,14 +250,12 @@
         }
     }
 
-    // **FIX:** Added event listeners for opening and closing modals
     document.getElementById('manage-positions-btn').addEventListener('click', () => {
         openModal('positions-modal');
     });
     
     document.querySelectorAll('.modal-close').forEach(button => {
         button.addEventListener('click', (e) => {
-            // Find the parent modal and close it
             const modalId = e.target.closest('.modal').id;
             closeModal(modalId);
         });
@@ -286,7 +281,7 @@
 
         if (button.matches('.btn-passed')) {
             document.getElementById('schedule-doc-id').value = docId;
-            openModal('schedule-modal'); // This call now works correctly
+            openModal('schedule-modal');
         } else if (button.matches('.btn-failed')) {
             if (!confirm(`This will mark ${appData.name} as Failed. Are you sure?`)) return;
             button.disabled = true;
@@ -342,7 +337,7 @@
             }
             
             renderTable();
-            closeModal('schedule-modal'); // This call now works correctly
+            closeModal('schedule-modal');
             alert('Interview invitation sent successfully!');
         } catch (error) {
             console.error('EmailJS Error:', error);
