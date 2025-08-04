@@ -145,7 +145,7 @@
     import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
     const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
-    const EMAILJS_UNIVERSAL_TEMPLATE_ID = 'template_jfzey48'; 
+    const EMAILJS_UNIVERSAL_TEMPLATE_ID = 'YOUR_UNIVERSAL_TEMPLATE_ID'; 
     const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
     
     const firebaseConfig = {
@@ -393,7 +393,7 @@
             alert('Interview invitation sent successfully!');
         } catch (error) {
             console.error('EmailJS Error:', error);
-            alert('Failed to send email. Check console for details.');
+            alert('Failed to send email. Please check the console for details.');
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Send Invitation';
