@@ -145,7 +145,7 @@
     import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
     const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
-    const EMAILJS_UNIVERSAL_TEMPLATE_ID = 'template_jfzey48; 
+    const EMAILJS_UNIVERSAL_TEMPLATE_ID = 'YOUR_UNIVERSAL_TEMPLATE_ID'; 
     const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
     
     const firebaseConfig = {
@@ -172,7 +172,7 @@
     window.openModal = (modalId) => document.getElementById(modalId).style.display = 'flex';
     window.closeModal = (modalId) => document.getElementById(modalId).style.display = 'none';
 
-    // ... (All functions from renderPositions to initialFetch are the same) ...
+    // ... (All functions from renderPositions to initialFetch are unchanged) ...
     const positionsCollection = collection(db, "positions");
     const renderPositions = async () => {
         const querySnapshot = await getDocs(query(positionsCollection, orderBy("name")));
@@ -268,7 +268,6 @@
             applicationsListDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Could not retrieve data.</p>`;
         }
     }
-
     document.getElementById('manage-positions-btn').addEventListener('click', () => { window.openModal('positions-modal'); });
     document.querySelectorAll('.tab-btn').forEach(button => {
         button.addEventListener('click', () => {
@@ -304,14 +303,12 @@
 
             const hiredMessage = `<p>We are officially offering you the <strong>${appData.position}</strong> position at Lifewood. We were incredibly impressed during the interview process and believe you will be a fantastic addition to our team. Welcome aboard!</p><p>Please expect a follow-up email from our HR department within the next two business days with your official offer letter and onboarding documents.</p>`;
             
-            // --- REVISED: Match the variable names to your EmailJS template ---
+            // --- FINALIZED: Correct parameter structure for EmailJS ---
             const templateParams = {
+                to_email: appData.email,
                 applicant_name: appData.name,
-                email_heading: "Congratulations! You're Hired!", // For the <h2> in your template
-                email_body: hiredMessage,                     // For the main content
-                // These are passed for EmailJS to use internally
-                email_subject: `Congratulations & Job Offer from Lifewood!`,
-                applicant_email: appData.email
+                email_heading: "Congratulations! You're Hired!",
+                email_body: hiredMessage
             };
 
             try {
@@ -331,14 +328,12 @@
 
             const failMessage = `<p>Thank you for your interest in the <strong>${appData.position}</strong> position and for the time you've invested in this process. After careful consideration, we have decided to move forward with other candidates whose qualifications more closely match the requirements of the role at this time.</p><p>We wish you the best of luck in your job search.</p>`;
             
-            // --- REVISED: Match the variable names to your EmailJS template ---
+            // --- FINALIZED: Correct parameter structure for EmailJS ---
             const templateParams = {
+                to_email: appData.email,
                 applicant_name: appData.name,
-                email_heading: "Update on your Lifewood Application",
-                email_body: failMessage,
-                // Internal variables
-                email_subject: `Update on your application for the ${appData.position} role`,
-                applicant_email: appData.email
+                email_heading: `Update on your Lifewood Application`,
+                email_body: failMessage
             };
 
             try {
@@ -377,14 +372,12 @@
         
         const scheduleMessage = `<p>We were impressed with your application and would like to invite you for an interview for the <strong>${applicant.position}</strong> role.</p><p><strong>Date:</strong> ${interviewDate}<br><strong>Time:</strong> ${interviewTimeValue}<br><strong>Location:</strong> Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug</p><p>Please let us know if this time works for you. We look forward to meeting you!</p>`;
 
-        // --- REVISED: Match the variable names to your EmailJS template ---
+        // --- FINALIZED: Correct parameter structure for EmailJS ---
         const templateParams = {
+            to_email: applicant.email,
             applicant_name: applicant.name,
-            email_heading: "Interview Invitation from Lifewood",
+            email_heading: `Interview Invitation for the ${applicant.position} Role`,
             email_body: scheduleMessage,
-            // Internal variables
-            email_subject: `Interview Invitation for the ${applicant.position} Role`,
-            applicant_email: applicant.email
         };
 
         try {
