@@ -4,70 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Lifewood</title>
-
     <link rel="stylesheet" href="style.css">
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
+    <!-- STYLES TO FIX MODALS, BUTTONS, AND TABS -->
     <style>
+        /* This style block ensures the modals work, regardless of style.css */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6); display: none;
-            justify-content: center; align-items: center; z-index: 1000;
-            padding: 20px; box-sizing: border-box;
+            background-color: rgba(19, 48, 32, 0.85); /* Dark overlay */
+            backdrop-filter: blur(4px);
+            display: none; /* Hidden by default */
+            justify-content: center; align-items: center; z-index: 2000; padding: 20px;
         }
-        .modal-content {
-            background: #fff; padding: 2rem; border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 100%;
-            max-width: 500px; position: relative;
-        }
-        .modal-close {
-            position: absolute; top: 15px; right: 15px; background: none;
-            border: none; font-size: 1.75rem; cursor: pointer;
-            line-height: 1; color: #555;
-        }
+        .modal-content { display: block !important; }
 
-        .admin-section { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 24px; margin-bottom: 40px; }
-        .admin-section h2 { margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .page-actions { margin-bottom: 24px; }
-        .modal-form-grid { display: grid; gap: 16px; }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group label { font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #555; }
-        .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
-        #position-management-form { display: flex; gap: 12px; margin-bottom: 20px; }
-        #new-position-name { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        #positions-list { display: flex; flex-wrap: wrap; gap: 10px; padding: 0; list-style: none; min-height: 38px; }
-        .position-tag { display: inline-flex; align-items: center; background-color: #e0e0e0; color: #333; padding: 6px 12px; border-radius: 16px; font-size: 0.9rem; font-weight: 500; }
-        .delete-position-btn { background: #888; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 14px; font-weight: bold; line-height: 20px; text-align: center; cursor: pointer; margin-left: 8px; transition: background-color 0.2s; }
-        .delete-position-btn:hover { background: #c0392b; }
-        .filter-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 24px; margin-bottom: 24px; }
-        .position-filter-container label { font-weight: 600; margin-right: 8px; }
-        #position-filter { padding: 8px 12px; font-size: 0.95rem; border-radius: 6px; border: 1px solid #ccc; }
-        .tabs { display: flex; border-bottom: 2px solid #eee; }
-        .tab-btn { padding: 12px 20px; font-size: 1rem; font-weight: 600; cursor: pointer; background: none; border: none; border-bottom: 3px solid transparent; color: #888; }
-        .tab-btn.active { color: var(--dark-serpent); border-bottom-color: var(--saffaron); }
-        .action-buttons button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; border-radius: 4px; }
-        .btn-passed { background-color: #28a745; color: white; border: 1px solid #28a745; }
-        .btn-failed { background-color: #dc3545; color: white; border: 1px solid #dc3545; }
-        .btn-delete { background-color: #6c757d; color: white; border: 1px solid #6c757d; }
-        .status { font-weight: bold; }
-        .status-pending { color: #6c757d; }
-        .status-scheduled { color: #8e44ad; }
-        .status-failed { color: #dc3545; }
-
-        #page-admin table tbody tr { transition: background-color 0.3s ease; }
-        #page-admin table tbody tr:hover { background-color: #f0f4f8; }
-
-        @media (max-width: 768px) {
-            #page-admin table { border: 0; } #page-admin table thead { display: none; }
-            #page-admin table tr { display: block; margin-bottom: 1.5rem; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); padding: 1rem; }
-            #page-admin table td { display: flex; justify-content: space-between; align-items: center; text-align: right; border-bottom: 1px dotted #eee; padding: 0.75rem 0.5rem; }
-            #page-admin table td:last-child { border-bottom: none; }
-            #page-admin table td::before { content: attr(data-label); font-weight: 600; text-align: left; padding-right: 1rem; color: var(--dark-serpent); }
-            #page-admin table td.action-buttons { justify-content: center; padding-top: 1rem; }
-            #page-admin table td.action-buttons::before { display: none; }
+        /* Redesigned filter tabs from your screenshot */
+        .tabs { 
+            display: flex; border: 1px solid #ccc; border-radius: 8px;
+            overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
+        .tab-btn { 
+            padding: 8px 20px; font-size: 0.9rem; font-weight: 600; cursor: pointer; 
+            background-color: #f0f0f0; color: #555; border: none;
+            border-right: 1px solid #ccc; transition: background-color 0.2s;
+        }
+        .tabs .tab-btn:last-child { border-right: none; }
+        .tab-btn.active, .tab-btn:hover { background-color: var(--dark-serpent, #133020); color: white; }
+        
+        /* Redesigned action buttons from your screenshot */
+        .action-buttons button {
+            display: inline-block; padding: 8px 16px; margin: 0 4px;
+            border-radius: 6px; font-weight: 600; cursor: pointer;
+            border: none; font-size: 0.85rem; color: white;
+            transition: transform 0.2s ease;
+        }
+        .action-buttons button:hover { transform: translateY(-2px); }
+        .btn-hired, .btn-passed { background-color: #28a745; } /* Green */
+        .btn-fail { background-color: #dc3545; } /* Red */
+        .btn-delete { background-color: #6c757d; } /* Gray */
     </style>
+
     <script>
         if (sessionStorage.getItem('lifewood_admin_auth') !== 'true') {
             window.location.replace('index.html');
@@ -76,278 +54,205 @@
 </head>
 <body id="page-admin">
 
-    <div class="modal" id="positions-modal" style="display:none;">
-        <div class="modal-content">
-            <button class="modal-close" onclick="window.closeModal('positions-modal')">×</button>
-            <h2>Manage Job Positions</h2>
-            <form id="position-management-form">
-                <input type="text" id="new-position-name" placeholder="Enter new job title" required>
-                <button type="submit" class="btn btn-primary">Add Position</button>
-            </form>
-            <ul id="positions-list"></ul>
-        </div>
+    <!-- All Modals (your original modals + the new Hired modal) -->
+    <div class="modal" id="positions-modal">
+        <div class="modal-content"><button class="modal-close" onclick="closeModal('positions-modal')">×</button><h2>Manage Job Positions</h2><form id="position-management-form"><input type="text" id="new-position-name" placeholder="Enter new job title" required><button type="submit" class="btn btn-primary">Add Position</button></form><ul id="positions-list"></ul></div>
+    </div>
+    <div class="modal" id="schedule-modal">
+        <div class="modal-content"><button class="modal-close" onclick="closeModal('schedule-modal')">×</button><h2>Schedule Interview</h2><form id="schedule-form"><input type="hidden" id="schedule-doc-id"><div class="form-group"><label for="schedule-date">Interview Date</label><input type="date" id="schedule-date" required></div><div class="form-group"><label for="schedule-time">Interview Time</label><input type="time" id="schedule-time" required></div><button type="submit" class="btn btn-primary">Send Invitation</button></form></div>
+    </div>
+    <div class="modal" id="hired-modal">
+        <div class="modal-content"><button class="modal-close" onclick="closeModal('hired-modal')">×</button><h3>Send Job Offer</h3><form id="hired-form"><input type="hidden" id="hired-doc-id"><div class="form-group"><label for="hired-message">Next Steps / Offer Details</label><textarea id="hired-message" rows="6" placeholder="Example: Please reply to this email to confirm acceptance..." required></textarea></div><button type="submit" class="btn btn-primary">Send Offer</button></form></div>
     </div>
 
-    <div class="modal" id="schedule-modal" style="display:none;">
-        <div class="modal-content">
-            <button class="modal-close" onclick="window.closeModal('schedule-modal')">×</button>
-            <h2>Schedule Face-to-Face Interview</h2>
-            <form id="schedule-form" class="modal-form-grid">
-                <input type="hidden" id="schedule-doc-id">
-                <div class="form-group"><label for="schedule-date">Interview Date</label><input type="date" id="schedule-date" required></div>
-                <div class="form-group"><label for="schedule-time">Interview Time</label><input type="time" id="schedule-time" required></div>
-                <p style="font-size: 0.9rem; color: #555; margin: 0;">The location will be set to the Cebu IT Park office.</p>
-                <button type="submit" class="btn btn-primary">Send Invitation</button>
-            </form>
-        </div>
-    </div>
+    <!-- Main Page Structure (from your original code) -->
+    <header class="main-header"><div class="container"><a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-icon" /><div class="logo-text-stack"><span class="logo-text">lifewood</span></div></a><button id="logout-button" class="btn">Logout</button></div></header>
+    <main><section><div class="container"><div class="admin-section"><div class="page-actions"><button id="manage-positions-btn" class="btn btn-primary">Manage Job Positions</button></div><h2>Submitted Applications</h2><div class="filter-controls"><div class="position-filter-container"><label for="position-filter">Filter by Position:</label><select id="position-filter"><option value="all">All Positions</option></select></div><div class="tabs"><button class="tab-btn active" data-tab="pending">Pending</button><button class="tab-btn" data-tab="processed">Processed</button></div></div><div id="applications-list"><p>Loading applications...</p></div></div></div></section></main>
 
-    <header class="main-header">
-        <div class="container">
-            <a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-icon" /><div class="logo-text-stack"><span class="logo-text">lifewood</span></div></a>
-            <button id="logout-button" class="btn">Logout</button>
-        </div>
-    </header>
-
-    <main>
-        <section>
-            <div class="container">
-                <div class="admin-section">
-                    <div class="page-actions"><button id="manage-positions-btn" class="btn btn-primary">Manage Job Positions</button></div>
-                    <h2>Submitted Applications</h2>
-                    <div class="filter-controls">
-                        <div class="position-filter-container"><label for="position-filter">Filter by Position:</label><select id="position-filter"><option value="all">All Positions</option></select></div>
-                        <div class="tabs"><button class="tab-btn active" data-tab="pending">Pending</button><button class="tab-btn" data-tab="processed">Processed</button></div>
-                    </div>
-                    <div id="applications-list"><p>Loading applications...</p></div>
-                </div>
-            </div>
-        </section>
-    </main>
-
+    <!-- THE FINAL, UPGRADED SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
-        const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
-        const EMAILJS_SCHEDULE_TEMPLATE_ID = 'template_jfzey48';
-        const EMAILJS_FAILED_TEMPLATE_ID = 'template_m5sztl8';
-        const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
-        
-        const firebaseConfig = {
-            apiKey: "AIzaSyDfeMg7BzcR1UvsZtFv4SQQtfJZWSdsGxY",
-            authDomain: "lifewood-420.firebaseapp.com",
-            projectId: "lifewood-420",
-            storageBucket: "lifewood-420.firebasestorage.app",
-            messagingSenderId: "277748825194",
-            appId: "1:277748825194:web:a39e906c4bdf3417e25e13"
-        };
+        // This function runs once the entire page is loaded and ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
+            const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
+            const APPLICANT_TEMPLATE_ID = 'template_jfzey48'; // Your master template ID is now here
+            
+            const firebaseConfig = { apiKey: "AIzaSyDfeMg7BzcR1UvsZtFv4SQQtfJZWSdsGxY", authDomain: "lifewood-420.firebaseapp.com", projectId: "lifewood-420", storageBucket: "lifewood-420.firebasestorage.app", messagingSenderId: "277748825194", appId: "1:277748825194:web:a39e906c4bdf3417e25e13" };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        
-        const applicationsListDiv = document.getElementById('applications-list');
-        const positionFilter = document.getElementById('position-filter');
-        const positionsListUL = document.getElementById('positions-list');
-        const positionMgmtForm = document.getElementById('position-management-form');
-        const scheduleForm = document.getElementById('schedule-form');
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            emailjs.init(EMAILJS_PUBLIC_KEY);
+            
+            const applicationsListDiv = document.getElementById('applications-list');
+            const positionFilter = document.getElementById('position-filter');
+            const positionsListUL = document.getElementById('positions-list');
+            const positionMgmtForm = document.getElementById('position-management-form');
+            const scheduleForm = document.getElementById('schedule-form');
+            const hiredForm = document.getElementById('hired-form');
 
-        let allApplications = []; 
-        let activeTab = 'pending';
-        
-        window.openModal = (modalId) => document.getElementById(modalId).style.display = 'flex';
-        window.closeModal = (modalId) => document.getElementById(modalId).style.display = 'none';
+            let allApplications = []; 
+            let activeTab = 'pending';
+            
+            window.openModal = (modalId) => document.getElementById(modalId).style.display = 'flex';
+            window.closeModal = (modalId) => document.getElementById(modalId).style.display = 'none';
 
-        const positionsCollection = collection(db, "positions");
-        const renderPositions = async () => {
-            const querySnapshot = await getDocs(query(positionsCollection, orderBy("name")));
-            positionsListUL.innerHTML = '';
-            querySnapshot.forEach(doc => {
-                const li = document.createElement('li');
-                li.className = 'position-tag';
-                li.innerHTML = `<span>${doc.data().name}</span><button class="delete-position-btn" data-doc-id="${doc.id}">×</button>`;
-                positionsListUL.appendChild(li);
-            });
-        };
-        
-        positionMgmtForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const positionName = document.getElementById('new-position-name').value.trim();
-            if (!positionName) return;
-            document.getElementById('new-position-name').disabled = true;
-            await addDoc(positionsCollection, { name: positionName });
-            document.getElementById('new-position-name').value = '';
-            document.getElementById('new-position-name').disabled = false;
-            await renderPositions();
-            await populatePositionFilter();
-        });
+            async function sendApplicantEmail(type, appData, details = {}) {
+                const templateParams = {
+                    applicant_email: appData.email, applicant_name: appData.name, applicant_position: appData.position,
+                    email_subject: '', email_heading: '', email_body: ''
+                };
+                switch (type) {
+                    case 'passed':
+                        templateParams.email_subject = `Interview Invitation for ${appData.position}`;
+                        templateParams.email_heading = "Interview Confirmation";
+                        templateParams.email_body = `<p>Congratulations! We would like to invite you for an interview. Please see details below:</p><div style="background-color:#ffffff;border:1px solid #dcd1b5;border-radius:8px;padding:20px;margin:24px 0;"><p style="margin:8px 0;"><strong>Date:</strong> ${details.interview_date}</p><p style="margin:8px 0;"><strong>Time:</strong> ${details.interview_time}</p><p style="margin:8px 0;"><strong>Location:</strong> Ground Floor i2 Building, Cebu IT Park</p></div><p>We look forward to speaking with you!</p>`;
+                        break;
+                    case 'failed':
+                        templateParams.email_subject = `Update on Your Application for ${appData.position}`;
+                        templateParams.email_heading = "Update on Your Application";
+                        templateParams.email_body = `<p>Thank you for your interest in the <strong>${appData.position}</strong> position. After careful consideration, we have decided not to move forward. We wish you the best of luck.</p>`;
+                        break;
+                    case 'hired':
+                        templateParams.email_subject = `Job Offer for ${appData.position}`;
+                        templateParams.email_heading = "Congratulations! You're Hired!";
+                        templateParams.email_body = `<p>Following your interview, we are thrilled to offer you the position of <strong>${appData.position}</strong>! Next steps:</p><p>${details.hired_message.replace(/\n/g, '<br>')}</p>`;
+                        break;
+                }
+                return emailjs.send(EMAILJS_SERVICE_ID, APPLICANT_TEMPLATE_ID, templateParams);
+            }
 
-        positionsListUL.addEventListener('click', async (e) => {
-            const deleteButton = e.target.closest('.delete-position-btn');
-            if (deleteButton) {
-                const docId = deleteButton.dataset.docId;
-                if (confirm('Are you sure you want to delete this position?')) {
-                    await deleteDoc(doc(db, 'positions', docId));
+            async function renderPositions() {
+                const querySnapshot = await getDocs(query(collection(db, "positions"), orderBy("name")));
+                positionsListUL.innerHTML = '';
+                querySnapshot.forEach(doc => {
+                    const li = document.createElement('li');
+                    li.className = 'position-tag';
+                    li.innerHTML = `<span>${doc.data().name}</span><button class="delete-position-btn" data-doc-id="${doc.id}">×</button>`;
+                    positionsListUL.appendChild(li);
+                });
+            }
+            
+            async function populatePositionFilter() {
+                const currentFilter = positionFilter.value;
+                positionFilter.innerHTML = '<option value="all">All Positions</option>';
+                const querySnapshot = await getDocs(query(collection(db, "positions"), orderBy("name")));
+                querySnapshot.forEach(doc => {
+                    positionFilter.add(new Option(doc.data().name, doc.data().name));
+                });
+                positionFilter.value = currentFilter;
+            }
+
+            function renderTable() {
+                let filteredApps = allApplications.filter(app => {
+                    const status = app.data.status || 'Pending';
+                    return activeTab === 'pending' ? (status === 'Pending' || status === 'Scheduled') : (status === 'Hired' || status === 'Failed');
+                });
+                if (positionFilter.value !== 'all') {
+                    filteredApps = filteredApps.filter(app => app.data.position === positionFilter.value);
+                }
+                if (filteredApps.length === 0) { applicationsListDiv.innerHTML = `<p>No applications found matching the current filters.</p>`; return; }
+                
+                let tableHtml = `<table><thead><tr><th>Name</th><th>Email</th><th>Position</th><th>Links</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
+                filteredApps.forEach(app => {
+                    const data = app.data; const docId = app.id;
+                    let statusHtml = `<strong class="status status-${(data.status || 'pending').toLowerCase()}">${data.status || 'Pending'}</strong>`;
+                    if (data.status === 'Scheduled' && data.interviewDate) {
+                        statusHtml += `<br><small>${new Date(data.interviewDate + 'T00:00:00').toLocaleDateString()} @ ${data.interviewTime}</small>`;
+                    }
+                    let actionButtonsHtml = '';
+                    if (data.status === 'Pending') {
+                        actionButtonsHtml = `<button class="btn-passed">Pass & Schedule</button><button class="btn-fail">Fail</button>`;
+                    } else if (data.status === 'Scheduled') {
+                        actionButtonsHtml = `<button class="btn-hired">Mark as Hired</button><button class="btn-fail">Fail</button>`;
+                    } else {
+                        actionButtonsHtml = `<button class="btn-delete">Delete</button>`;
+                    }
+                    tableHtml += `<tr id="row-${docId}"><td data-label="Name">${data.name||'N/A'}</td><td data-label="Email"><a href="mailto:${data.email}">${data.email||'N/A'}</a></td><td data-label="Position">${data.position||'N/A'}</td><td data-label="Links"><a href="${data.resumeLink}" target="_blank">Resume</a> ${data.portfolioLink?`| <a href="${data.portfolioLink}" target="_blank">Portfolio</a>`:''}</td><td data-label="Status">${statusHtml}</td><td class="action-buttons" data-doc-id="${docId}">${actionButtonsHtml}</td></tr>`;
+                });
+                applicationsListDiv.innerHTML = tableHtml + '</tbody></table>';
+            }
+            
+            async function fetchAndRenderAll() {
+                try {
                     await renderPositions();
                     await populatePositionFilter();
+                    const q = query(collection(db, "applications"), orderBy("submittedAt", "desc"));
+                    const querySnapshot = await getDocs(q);
+                    allApplications = querySnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+                    renderTable();
+                } catch (err) {
+                    console.error("Error during initial fetch: ", err);
+                    applicationsListDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Could not retrieve data.</p>`;
                 }
             }
-        });
-        
-        function renderTable() {
-            let filteredApps = allApplications.filter(app => activeTab === 'pending' ? app.data.status === 'Pending' : app.data.status !== 'Pending');
-            if (positionFilter.value !== 'all') {
-                filteredApps = filteredApps.filter(app => app.data.position === positionFilter.value);
-            }
-            if (filteredApps.length === 0) {
-                applicationsListDiv.innerHTML = `<p>No applications found matching the current filters.</p>`;
-                return;
-            }
-            let tableHtml = `<table><thead><tr><th>Name</th><th>Email</th><th>Position</th><th>Links</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
-            filteredApps.forEach(app => {
-                const data = app.data; const docId = app.id; const statusClass = `status-${(data.status || 'pending').toLowerCase()}`;
-                let statusHtml = `<strong class="status ${statusClass}">${data.status || 'Pending'}</strong>`;
-                if (data.status === 'Scheduled' && data.interviewDate) {
-                    const date = new Date(data.interviewDate + 'T00:00:00');
-                    statusHtml += `<br><small>${date.toLocaleDateString()} @ ${data.interviewTime}</small>`;
-                }
-                let actionButtonsHtml = '';
-                if (data.status === 'Pending') {
-                    actionButtonsHtml = `<button class="btn-passed">Pass & Schedule</button><button class="btn-failed">Fail</button>`;
-                } else {
-                    actionButtonsHtml = `<button class="btn-delete">Delete</button>`;
-                }
-                tableHtml += `<tr id="row-${docId}"><td data-label="Name">${data.name||'N/A'}</td><td data-label="Email"><a href="mailto:${data.email}">${data.email||'N/A'}</a></td><td data-label="Position">${data.position||'N/A'}</td><td data-label="Links"><a href="${data.resumeLink}" target="_blank">Resume</a> ${data.portfolioLink?`| <a href="${data.portfolioLink}" target="_blank">Portfolio</a>`:''}</td><td data-label="Status">${statusHtml}</td><td class="action-buttons" data-doc-id="${docId}">${actionButtonsHtml}</td></tr>`;
-            });
-            applicationsListDiv.innerHTML = tableHtml + '</tbody></table>';
-        }
 
-        async function populatePositionFilter() {
-            positionFilter.innerHTML = '<option value="all">All Positions</option>';
-            const querySnapshot = await getDocs(query(positionsCollection, orderBy("name")));
-            querySnapshot.forEach(doc => {
-                const positionName = doc.data().name;
-                if (positionName) {
-                    const option = document.createElement('option');
-                    option.value = positionName;
-                    option.textContent = positionName;
-                    positionFilter.appendChild(option);
+            positionMgmtForm.addEventListener('submit', async (e) => { e.preventDefault(); const input = document.getElementById('new-position-name'); if (!input.value.trim()) return; input.disabled = true; await addDoc(collection(db, "positions"), { name: input.value.trim() }); input.value = ''; input.disabled = false; fetchAndRenderAll(); });
+            positionsListUL.addEventListener('click', async (e) => { const btn = e.target.closest('.delete-position-btn'); if (btn && confirm('Are you sure you want to delete this position?')) { await deleteDoc(doc(db, 'positions', btn.dataset.docId)); fetchAndRenderAll(); } });
+            
+            applicationsListDiv.addEventListener('click', async (e) => {
+                const button = e.target.closest('button');
+                if (!button) return;
+                const actionCell = e.target.closest('.action-buttons');
+                const docId = actionCell.dataset.docId;
+                const appData = allApplications.find(app => app.id === docId)?.data;
+
+                if (button.matches('.btn-passed')) {
+                    document.getElementById('schedule-doc-id').value = docId; openModal('schedule-modal');
+                } else if (button.matches('.btn-hired')) {
+                    document.getElementById('hired-doc-id').value = docId; openModal('hired-modal');
+                } else if (button.matches('.btn-fail')) {
+                    if (!confirm(`Mark ${appData.name} as FAILED and send rejection email?`)) return;
+                    button.disabled = true; button.textContent = 'Sending...';
+                    try { await sendApplicantEmail('failed', appData); await updateDoc(doc(db, 'applications', docId), { status: 'Failed' }); fetchAndRenderAll(); } 
+                    catch (err) { alert('Operation failed. Check console.'); console.error(err); } 
+                    finally { button.disabled = false; button.textContent = 'Fail'; }
+                } else if (button.matches('.btn-delete')) {
+                    if (confirm('Are you sure you want to permanently delete this application?')) { await deleteDoc(doc(db, 'applications', docId)); fetchAndRenderAll(); }
                 }
             });
-        }
-        
-        async function initialFetch() {
-            try {
-                await renderPositions();
-                await populatePositionFilter();
-                const appsCollection = collection(db, "applications");
-                const q = query(appsCollection, orderBy("submittedAt", "desc"));
-                const querySnapshot = await getDocs(q);
-                allApplications = querySnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-                renderTable();
-            } catch (err) {
-                console.error("Error during initial fetch: ", err);
-                applicationsListDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Could not retrieve data.</p>`;
-            }
-        }
 
-        document.getElementById('manage-positions-btn').addEventListener('click', () => {
-            window.openModal('positions-modal');
-        });
-        
-        document.querySelectorAll('.tab-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                document.querySelector('.tab-btn.active').classList.remove('active');
-                button.classList.add('active');
-                activeTab = button.dataset.tab;
-                renderTable();
+            scheduleForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                submitBtn.disabled = true; submitBtn.textContent = 'Sending...';
+                const docId = document.getElementById('schedule-doc-id').value;
+                const appData = allApplications.find(app => app.id === docId)?.data;
+                const interviewDate = document.getElementById('schedule-date').value;
+                const interviewTime = document.getElementById('schedule-time').value;
+                try {
+                    await sendApplicantEmail('passed', appData, { interview_date: new Date(interviewDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), interview_time: interviewTime });
+                    await updateDoc(doc(db, 'applications', docId), { status: 'Scheduled', interviewDate, interviewTime });
+                    closeModal('schedule-modal'); alert('Interview invitation sent successfully!'); fetchAndRenderAll();
+                } catch (error) { console.error('EmailJS Error:', error); alert('Failed to send email. Check console for details.'); } 
+                finally { submitBtn.disabled = false; submitBtn.textContent = 'Send Invitation'; }
             });
+
+            hiredForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                submitBtn.disabled = true; submitBtn.textContent = 'Sending...';
+                const docId = document.getElementById('hired-doc-id').value;
+                const appData = allApplications.find(app => app.id === docId)?.data;
+                const hiredMessage = document.getElementById('hired-message').value;
+                try {
+                    await sendApplicantEmail('hired', appData, { hired_message: hiredMessage });
+                    await updateDoc(doc(db, 'applications', docId), { status: 'Hired' });
+                    closeModal('hired-modal'); alert('Job offer sent successfully!'); fetchAndRenderAll();
+                } catch (error) { console.error('EmailJS Error:', error); alert('Failed to send email. Check console for details.'); } 
+                finally { submitBtn.disabled = false; submitBtn.textContent = 'Send Offer'; }
+            });
+            
+            document.getElementById('manage-positions-btn').addEventListener('click', () => openModal('positions-modal'));
+            document.querySelectorAll('.tab-btn').forEach(button => button.addEventListener('click', () => { document.querySelector('.tab-btn.active').classList.remove('active'); button.classList.add('active'); activeTab = button.dataset.tab; renderTable(); }));
+            positionFilter.addEventListener('change', renderTable);
+            document.querySelectorAll('.modal-close').forEach(button => button.addEventListener('click', () => closeModal(button.getAttribute('onclick').split("'")[1])));
+            document.getElementById('logout-button').addEventListener('click', () => { sessionStorage.removeItem('lifewood_admin_auth'); window.location.replace('index.html'); });
+
+            fetchAndRenderAll();
         });
-        
-        positionFilter.addEventListener('change', renderTable);
-        
-        applicationsListDiv.addEventListener('click', async (e) => {
-            const button = e.target.closest('button');
-            if (!button) return;
-            const actionCell = e.target.closest('.action-buttons');
-            const docId = actionCell.dataset.docId;
-            const appData = allApplications.find(app => app.id === docId)?.data;
-
-            if (button.matches('.btn-passed')) {
-                document.getElementById('schedule-doc-id').value = docId;
-                window.openModal('schedule-modal');
-            } else if (button.matches('.btn-failed')) {
-                if (!confirm(`This will mark ${appData.name} as Failed. Are you sure?`)) return;
-                button.disabled = true;
-                await updateDoc(doc(db, 'applications', docId), { status: 'Failed' });
-                const appIndex = allApplications.findIndex(app => app.id === docId);
-                if(appIndex > -1) allApplications[appIndex].data.status = 'Failed';
-                renderTable();
-            } else if (button.matches('.btn-delete')) {
-                if (confirm('Are you sure you want to permanently delete this application?')) {
-                    const appIndex = allApplications.findIndex(app => app.id === docId);
-                    if (appIndex > -1) {
-                        allApplications.splice(appIndex, 1);
-                        renderTable();
-                        await deleteDoc(doc(db, 'applications', docId));
-                    }
-                }
-            }
-        });
-
-        scheduleForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            submitBtn.disabled = true; submitBtn.textContent = 'Sending...';
-
-            const docId = document.getElementById('schedule-doc-id').value;
-            const applicant = allApplications.find(app => app.id === docId)?.data;
-            if (!applicant) { alert('Error: Could not find applicant data.'); return; }
-
-            const interviewDetails = {
-                interview_date: new Date(document.getElementById('schedule-date').value + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-                interview_time: document.getElementById('schedule-time').value,
-                interview_mode: 'Face-to-Face',
-                interview_location: 'Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug',
-                applicant_name: applicant.name,
-                applicant_email: applicant.email,
-                applicant_position: applicant.position
-            };
-
-            try {
-                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_SCHEDULE_TEMPLATE_ID, interviewDetails);
-                
-                await updateDoc(doc(db, 'applications', docId), { 
-                    status: 'Scheduled',
-                    interviewDate: document.getElementById('schedule-date').value,
-                    interviewTime: interviewDetails.interview_time,
-                });
-
-                const appIndex = allApplications.findIndex(app => app.id === docId);
-                if(appIndex > -1) {
-                    allApplications[appIndex].data.status = 'Scheduled';
-                    allApplications[appIndex].data.interviewDate = document.getElementById('schedule-date').value;
-                    allApplications[appIndex].data.interviewTime = interviewDetails.interview_time;
-                }
-                
-                renderTable();
-                window.closeModal('schedule-modal');
-                alert('Interview invitation sent successfully!');
-            } catch (error) {
-                console.error('EmailJS Error:', error);
-                alert('Failed to send email. Check console for details.');
-            } finally {
-                submitBtn.disabled = false; submitBtn.textContent = 'Send Invitation';
-            }
-        });
-        
-        document.getElementById('logout-button').addEventListener('click', () => {
-            sessionStorage.removeItem('lifewood_admin_auth');
-            window.location.replace('index.html');
-        });
-
-        emailjs.init(EMAILJS_PUBLIC_KEY);
-        initialFetch();
     </script>
 </body>
 </html>
