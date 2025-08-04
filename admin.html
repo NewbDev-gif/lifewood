@@ -60,7 +60,7 @@
     .status-hired { background-color: #007bff; }
     .status-failed { background-color: #dc3545; }
 
-    #page-admin table tbody tr { transition: background-color 0.3s ease; }
+    #page-admin table tbody tr { transition: background-color: 0.3s ease; }
     #page-admin table tbody tr:hover { background-color: #f0f4f8; }
 
     @media (max-width: 768px) {
@@ -83,7 +83,7 @@
 <!-- All modals are clean with no inline styles or onclick attributes -->
 <div class="modal" id="positions-modal">
     <div class="modal-content">
-        <button class="modal-close">×</button>
+        <button type="button" class="modal-close">×</button>
         <h2>Manage Job Positions</h2>
         <form id="position-management-form">
             <input type="text" id="new-position-name" placeholder="Enter new job title" required>
@@ -95,7 +95,7 @@
 
 <div class="modal" id="schedule-modal">
     <div class="modal-content">
-        <button class="modal-close">×</button>
+        <button type="button" class="modal-close">×</button>
         <h2>Schedule Face-to-Face Interview</h2>
         <form id="schedule-form" class="modal-form-grid">
             <input type="hidden" id="schedule-doc-id">
@@ -110,7 +110,7 @@
 <header class="main-header">
     <div class="container">
         <a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-icon" /><div class="logo-text-stack"><span class="logo-text">lifewood</span></div></a>
-        <button id="logout-button" class="btn">Logout</button>
+        <button type="button" id="logout-button" class="btn">Logout</button>
     </div>
 </header>
 
@@ -118,14 +118,14 @@
     <section>
         <div class="container">
             <div class="admin-section">
-                <div class="page-actions"><button id="manage-positions-btn" class="btn btn-primary">Manage Job Positions</button></div>
+                <div class="page-actions"><button type="button" id="manage-positions-btn" class="btn btn-primary">Manage Job Positions</button></div>
                 <h2>Submitted Applications</h2>
                 <div class="filter-controls">
                     <div class="position-filter-container"><label for="position-filter">Filter by Position:</label><select id="position-filter"><option value="all">All Positions</option></select></div>
                     <div class="tabs">
-                        <button class="tab-btn active" data-tab="pending">Pending</button>
-                        <button class="tab-btn" data-tab="processed">Processed</button>
-                        <button class="tab-btn" data-tab="hired">Hired</button> <!-- NEW TAB -->
+                        <button type="button" class="tab-btn active" data-tab="pending">Pending</button>
+                        <button type="button" class="tab-btn" data-tab="processed">Processed</button>
+                        <button type="button" class="tab-btn" data-tab="hired">Hired</button>
                     </div>
                 </div>
                 <div id="applications-list"><p>Loading applications...</p></div>
@@ -139,7 +139,7 @@
     import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
     // --- CONFIGURATION ---
-    const YOUR_SINGLE_TEMPLATE_ID = 'YOUR_EMAILJS_TEMPLATE_ID'; // IMPORTANT: Use your single master template ID here
+    const YOUR_SINGLE_TEMPLATE_ID = 'template_z2c3kgl'; // IMPORTANT: Use your single master template ID here
     const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
     const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
     const firebaseConfig = {
@@ -178,7 +178,7 @@
         querySnapshot.forEach(doc => {
             const li = document.createElement('li');
             li.className = 'position-tag';
-            li.innerHTML = `<span>${doc.data().name}</span><button class="delete-position-btn" data-doc-id="${doc.id}">×</button>`;
+            li.innerHTML = `<span>${doc.data().name}</span><button type="button" class="delete-position-btn" data-doc-id="${doc.id}">×</button>`;
             positionsListUL.appendChild(li);
         });
     };
@@ -214,12 +214,13 @@
             }
 
             let actionButtonsHtml = '';
+            // --- FIX: Added type="button" to all generated buttons ---
             if (status === 'Pending') {
-                actionButtonsHtml = `<button class="btn-passed">Pass & Schedule</button><button class="btn-failed">Fail</button>`;
+                actionButtonsHtml = `<button type="button" class="btn-passed">Pass & Schedule</button><button type="button" class="btn-failed">Fail</button>`;
             } else if (status === 'Scheduled') {
-                actionButtonsHtml = `<button class="btn-hired">Mark as Hired</button><button class="btn-failed">Fail</button>`;
+                actionButtonsHtml = `<button type="button" class="btn-hired">Mark as Hired</button><button type="button" class="btn-failed">Fail</button>`;
             } else {
-                actionButtonsHtml = `<button class="btn-delete">Delete</button>`;
+                actionButtonsHtml = `<button type="button" class="btn-delete">Delete</button>`;
             }
             
             tableHtml += `
