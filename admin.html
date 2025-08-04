@@ -9,7 +9,7 @@
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
-    <!-- GUARANTEED MODAL FIX + HEADER COLOR FIX -->
+    <!-- GUARANTEED FIXES: This style block fixes modals, logo color, and button designs -->
     <style>
         /* This style block ensures the modals work, regardless of style.css */
         .modal {
@@ -22,10 +22,35 @@
         .modal-content {
             display: block !important; /* This is the key fix for visibility */
         }
-        /* ADDED THIS BLOCK TO FIX HEADER COLORS */
+        /* This fixes the header logo color to be green */
         .main-header .logo .logo-text {
             color: #046241; /* This is the correct 'castleton-green' for the logo text */
         }
+        
+        /* THIS IS THE NEW STYLE TO MAKE YOUR BUTTONS LOOK GREAT */
+        .action-buttons button {
+            display: inline-block;
+            padding: 6px 14px;
+            margin: 2px 4px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+            font-size: 0.85rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            color: white; /* All buttons will have white text */
+        }
+        .action-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Specific colors for each button type */
+        .btn-hired, .btn-passed { background-color: #28a745; border-color: #28a745; }
+        .btn-fail { background-color: #dc3545; border-color: #dc3545; }
+        .btn-delete { background-color: #6c757d; border-color: #6c757d; }
     </style>
 
     <script>
@@ -179,6 +204,7 @@
                     if (data.status === 'Scheduled' && data.interviewDate) {
                         statusHtml += `<br><small>${new Date(data.interviewDate+'T00:00:00').toLocaleDateString()} @ ${data.interviewTime}</small>`;
                     }
+                    // UPDATED: Buttons now have classes for styling
                     let actionButtonsHtml = '';
                     if (data.status === 'Pending') {
                         actionButtonsHtml = `<button class="btn-passed">Pass & Schedule</button><button class="btn-fail">Fail</button>`;
@@ -248,54 +274,9 @@
             });
 
             // Form submission listeners with FULL ERROR HANDLING
-            scheduleForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const btn = e.target.querySelector('button');
-                btn.disabled = true; btn.textContent = 'Sending...';
-                
-                const docId = document.getElementById('schedule-doc-id').value;
-                const appData = allApplications.find(app => app.id === docId)?.data;
-                const interviewDate = document.getElementById('schedule-date').value;
-                const interviewTime = document.getElementById('schedule-time').value;
-
-                try {
-                    await sendApplicantEmail('passed', appData, { interview_date: new Date(interviewDate+'T00:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}), interview_time: interviewTime });
-                    await updateDoc(doc(db, 'applications', docId), { status: 'Scheduled', interviewDate, interviewTime });
-                    closeModal('schedule-modal');
-                    alert('Invitation sent successfully!');
-                    fetchAndRenderAll();
-                } catch (error) {
-                    console.error('Schedule Email Failed:', error);
-                    alert('Error: Could not send invitation. Please check the console.');
-                } finally {
-                    btn.disabled = false; btn.textContent = 'Send Invitation';
-                }
-            });
-
-            hiredForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const btn = e.target.querySelector('button');
-                btn.disabled = true; btn.textContent = 'Sending...';
-
-                const docId = document.getElementById('hired-doc-id').value;
-                const appData = allApplications.find(app => app.id === docId)?.data;
-                const hiredMessage = document.getElementById('hired-message').value;
-
-                try {
-                    await sendApplicantEmail('hired', appData, { hired_message: hiredMessage });
-                    await updateDoc(doc(db, 'applications', docId), { status: 'Hired' });
-                    closeModal('hired-modal');
-                    alert('Job offer sent successfully!');
-                    fetchAndRenderAll();
-                } catch (error) {
-                    console.error('Hired Email Failed:', error);
-                    alert('Error: Could not send job offer. Please check the console.');
-                } finally {
-                    btn.disabled = false; btn.textContent = 'Send Offer';
-                }
-            });
-
-            // Other UI Listeners
+            scheduleForm.addEventListener('submit', async (e) => { e.preventDefault(); const btn = e.target.querySelector('button'); btn.disabled = true; btn.textContent = 'Sending...'; const docId = document.getElementById('schedule-doc-id').value; const appData = allApplications.find(app => app.id === docId)?.data; const interviewDate = document.getElementById('schedule-date').value; const interviewTime = document.getElementById('schedule-time').value; try { await sendApplicantEmail('passed', appData, { interview_date: new Date(interviewDate+'T00:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}), interview_time: interviewTime }); await updateDoc(doc(db, 'applications', docId), { status: 'Scheduled', interviewDate, interviewTime }); closeModal('schedule-modal'); alert('Invitation sent successfully!'); fetchAndRenderAll(); } catch (error) { console.error('Schedule Email Failed:', error); alert('Error: Could not send invitation. Please check the console.'); } finally { btn.disabled = false; btn.textContent = 'Send Invitation'; } });
+            hiredForm.addEventListener('submit', async (e) => { e.preventDefault(); const btn = e.target.querySelector('button'); btn.disabled = true; btn.textContent = 'Sending...'; const docId = document.getElementById('hired-doc-id').value; const appData = allApplications.find(app => app.id === docId)?.data; const hiredMessage = document.getElementById('hired-message').value; try { await sendApplicantEmail('hired', appData, { hired_message: hiredMessage }); await updateDoc(doc(db, 'applications', docId), { status: 'Hired' }); closeModal('hired-modal'); alert('Job offer sent successfully!'); fetchAndRenderAll(); } catch (error) { console.error('Hired Email Failed:', error); alert('Error: Could not send job offer. Please check the console.'); } finally { btn.disabled = false; btn.textContent = 'Send Offer'; } });
+            
             positionMgmtForm.addEventListener('submit', async (e) => { e.preventDefault(); const input = document.getElementById('new-position-name'); if (!input.value.trim()) return; input.disabled = true; await addDoc(collection(db, "positions"), { name: input.value.trim() }); input.value = ''; input.disabled = false; fetchAndRenderAll(); });
             positionsListUL.addEventListener('click', async (e) => { if(e.target.matches('.delete-position-btn')) { if(confirm('Delete position?')) { await deleteDoc(doc(db, 'positions', e.target.dataset.docId)); fetchAndRenderAll(); } } });
             document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => { document.querySelector('.tab-btn.active').classList.remove('active'); b.classList.add('active'); activeTab = b.dataset.tab; renderTable(); }));
