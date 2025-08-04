@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Lifewood</title>
-    <!-- Your original stylesheet is correctly linked to keep your design -->
+    <!-- Your original stylesheet is linked to keep your design -->
     <link rel="stylesheet" href="style.css">
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -36,7 +36,7 @@
 </head>
 <body id="page-admin">
 
-    <!-- YOUR ORIGINAL MODALS + THE NEW 'HIRED' MODAL -->
+    <!-- All Modals (from your original code + Hired modal) -->
     <div class="modal" id="positions-modal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('positions-modal')">×</button>
@@ -51,12 +51,11 @@
     <div class="modal" id="schedule-modal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('schedule-modal')">×</button>
-            <h2>Schedule Face-to-Face Interview</h2>
-            <form id="schedule-form" class="modal-form-grid">
+            <h2>Schedule Interview</h2>
+            <form id="schedule-form">
                 <input type="hidden" id="schedule-doc-id">
                 <div class="form-group"><label for="schedule-date">Interview Date</label><input type="date" id="schedule-date" required></div>
                 <div class="form-group"><label for="schedule-time">Interview Time</label><input type="time" id="schedule-time" required></div>
-                <p style="font-size: 0.9rem; color: #555; margin: 0;">The location will be set to the Cebu IT Park office.</p>
                 <button type="submit" class="btn btn-primary">Send Invitation</button>
             </form>
         </div>
@@ -65,7 +64,7 @@
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('hired-modal')">×</button>
             <h3>Send Job Offer</h3>
-            <form id="hired-form" class="modal-form-grid">
+            <form id="hired-form">
                 <input type="hidden" id="hired-doc-id">
                 <div class="form-group">
                     <label for="hired-message">Next Steps / Offer Details</label>
@@ -76,10 +75,10 @@
         </div>
     </div>
 
-    <!-- YOUR ORIGINAL HEADER & MAIN CONTENT -->
+    <!-- Main Page Structure -->
     <header class="main-header">
         <div class="container">
-            <a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Hexagon Icon" class="logo-icon" />lifewood</a>
+            <a href="index.html" class="logo"><img src="logo.png" alt="Lifewood Icon" class="logo-icon" />lifewood</a>
             <button id="logout-button" class="btn">Logout</button>
         </div>
     </header>
@@ -99,7 +98,7 @@
         </section>
     </main>
 
-    <!-- THE FINAL, COMPLETE JAVASCRIPT -->
+    <!-- THE FINAL, ROBUST JAVASCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
@@ -222,7 +221,7 @@
                 if (!button) return;
                 const docId = e.target.closest('[data-doc-id]').dataset.docId;
                 const appData = allApplications.find(app => app.id === docId)?.data;
-                if (!appData) return;
+                if (!appData) { alert('Error: Applicant data not found. Please refresh.'); return; }
                 
                 if (button.matches('.btn-passed')) {
                     document.getElementById('schedule-doc-id').value = docId; openModal('schedule-modal');
@@ -230,9 +229,16 @@
                     document.getElementById('hired-doc-id').value = docId; openModal('hired-modal');
                 } else if (button.matches('.btn-fail')) {
                     if (!confirm(`Mark ${appData.name} as FAILED and send rejection email?`)) return;
-                    await sendApplicantEmail('failed', appData);
-                    await updateDoc(doc(db, 'applications', docId), { status: 'Failed' });
-                    fetchAndRenderAll();
+                    button.disabled = true; button.textContent = 'Sending...';
+                    try {
+                        await sendApplicantEmail('failed', appData);
+                        await updateDoc(doc(db, 'applications', docId), { status: 'Failed' });
+                        fetchAndRenderAll();
+                    } catch (err) {
+                        alert('Operation failed. Check console.'); console.error(err);
+                    } finally {
+                        button.disabled = false; button.textContent = 'Fail';
+                    }
                 } else if (button.matches('.btn-delete')) {
                     if (!confirm('Permanently DELETE this application?')) return;
                     await deleteDoc(doc(db, 'applications', docId));
@@ -240,12 +246,56 @@
                 }
             });
 
-            // Form submission listeners
-            scheduleForm.addEventListener('submit', async (e) => { e.preventDefault(); const docId = document.getElementById('schedule-doc-id').value; const appData = allApplications.find(app => app.id === docId)?.data; const interviewDate = document.getElementById('schedule-date').value; const interviewTime = document.getElementById('schedule-time').value; await sendApplicantEmail('passed', appData, { interview_date: new Date(interviewDate+'T00:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}), interview_time: interviewTime }); await updateDoc(doc(db, 'applications', docId), { status: 'Scheduled', interviewDate, interviewTime }); closeModal('schedule-modal'); fetchAndRenderAll(); });
-            hiredForm.addEventListener('submit', async (e) => { e.preventDefault(); const docId = document.getElementById('hired-doc-id').value; const appData = allApplications.find(app => app.id === docId)?.data; const hiredMessage = document.getElementById('hired-message').value; await sendApplicantEmail('hired', appData, { hired_message: hiredMessage }); await updateDoc(doc(db, 'applications', docId), { status: 'Hired' }); closeModal('hired-modal'); fetchAndRenderAll(); });
-            positionMgmtForm.addEventListener('submit', async (e) => { e.preventDefault(); const input = document.getElementById('new-position-name'); if (!input.value.trim()) return; await addDoc(collection(db, "positions"), { name: input.value.trim() }); input.value = ''; fetchAndRenderAll(); });
+            // Form submission listeners with FULL ERROR HANDLING
+            scheduleForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = e.target.querySelector('button');
+                btn.disabled = true; btn.textContent = 'Sending...';
+                
+                const docId = document.getElementById('schedule-doc-id').value;
+                const appData = allApplications.find(app => app.id === docId)?.data;
+                const interviewDate = document.getElementById('schedule-date').value;
+                const interviewTime = document.getElementById('schedule-time').value;
 
-            // Listeners for UI controls
+                try {
+                    await sendApplicantEmail('passed', appData, { interview_date: new Date(interviewDate+'T00:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}), interview_time: interviewTime });
+                    await updateDoc(doc(db, 'applications', docId), { status: 'Scheduled', interviewDate, interviewTime });
+                    closeModal('schedule-modal');
+                    alert('Invitation sent successfully!');
+                    fetchAndRenderAll();
+                } catch (error) {
+                    console.error('Schedule Email Failed:', error);
+                    alert('Error: Could not send invitation. Please check the console.');
+                } finally {
+                    btn.disabled = false; btn.textContent = 'Send Invitation';
+                }
+            });
+
+            hiredForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = e.target.querySelector('button');
+                btn.disabled = true; btn.textContent = 'Sending...';
+
+                const docId = document.getElementById('hired-doc-id').value;
+                const appData = allApplications.find(app => app.id === docId)?.data;
+                const hiredMessage = document.getElementById('hired-message').value;
+
+                try {
+                    await sendApplicantEmail('hired', appData, { hired_message: hiredMessage });
+                    await updateDoc(doc(db, 'applications', docId), { status: 'Hired' });
+                    closeModal('hired-modal');
+                    alert('Job offer sent successfully!');
+                    fetchAndRenderAll();
+                } catch (error) {
+                    console.error('Hired Email Failed:', error);
+                    alert('Error: Could not send job offer. Please check the console.');
+                } finally {
+                    btn.disabled = false; btn.textContent = 'Send Offer';
+                }
+            });
+
+            // Other UI Listeners
+            positionMgmtForm.addEventListener('submit', async (e) => { e.preventDefault(); const input = document.getElementById('new-position-name'); if (!input.value.trim()) return; input.disabled = true; await addDoc(collection(db, "positions"), { name: input.value.trim() }); input.value = ''; input.disabled = false; fetchAndRenderAll(); });
             positionsListUL.addEventListener('click', async (e) => { if(e.target.matches('.delete-position-btn')) { if(confirm('Delete position?')) { await deleteDoc(doc(db, 'positions', e.target.dataset.docId)); fetchAndRenderAll(); } } });
             document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => { document.querySelector('.tab-btn.active').classList.remove('active'); b.classList.add('active'); activeTab = b.dataset.tab; renderTable(); }));
             positionFilter.addEventListener('change', renderTable);
