@@ -8,23 +8,72 @@
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
-    <style>
-        /* Admin-specific styles for clarity */
-        .admin-section { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 24px; margin-bottom: 40px; }
-        .admin-section h2 { margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .page-actions { margin-bottom: 24px; }
-        .filter-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 24px; margin-bottom: 24px; }
-        .tabs { display: flex; border-bottom: 2px solid #eee; }
-        .tab-btn { padding: 12px 20px; font-size: 1rem; font-weight: 600; cursor: pointer; background: none; border: none; border-bottom: 3px solid transparent; color: #888; }
-        .tab-btn.active { color: var(--dark-serpent); border-bottom-color: var(--saffaron); }
-        .status-pending { color: #6c757d; }
-        .status-scheduled { color: #8e44ad; }
-        .status-hired { color: #28a745; font-weight: bold; }
-        .status-failed { color: #dc3545; }
-        .position-tag { display: inline-flex; align-items: center; background-color: #e0e0e0; color: #333; padding: 6px 12px; border-radius: 16px; font-size: 0.9rem; font-weight: 500; }
-        .delete-position-btn { background: #888; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 14px; font-weight: bold; line-height: 20px; text-align: center; cursor: pointer; margin-left: 8px; }
-        .delete-position-btn:hover { background: #c0392b; }
-    </style>
+   <style>
+    /* Admin-specific styles for clarity */
+    .admin-section { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 24px; margin-bottom: 40px; }
+    .admin-section h2 { margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+    .page-actions { margin-bottom: 24px; }
+    .filter-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 24px; margin-bottom: 24px; }
+    .tabs { display: flex; border-bottom: 2px solid #eee; }
+    .tab-btn { padding: 12px 20px; font-size: 1rem; font-weight: 600; cursor: pointer; background: none; border: none; border-bottom: 3px solid transparent; color: #888; }
+    .tab-btn.active { color: var(--dark-serpent); border-bottom-color: var(--saffaron); }
+    .status-pending { color: #6c757d; }
+    .status-scheduled { color: #8e44ad; }
+    .status-hired { color: #28a745; font-weight: bold; }
+    .status-failed { color: #dc3545; }
+    .position-tag { display: inline-flex; align-items: center; background-color: #e0e0e0; color: #333; padding: 6px 12px; border-radius: 16px; font-size: 0.9rem; font-weight: 500; }
+    .delete-position-btn { background: #888; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 14px; font-weight: bold; line-height: 20px; text-align: center; cursor: pointer; margin-left: 8px; }
+    .delete-position-btn:hover { background: #c0392b; }
+
+    /* --- ESSENTIAL MODAL STYLES --- */
+    /* This is the fix to make popups appear */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(19, 48, 32, 0.85); /* Slightly darker */
+        backdrop-filter: blur(4px);
+        z-index: 2000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .modal-content {
+        background: #fff;
+        padding: 2.5rem;
+        border-radius: 8px;
+        max-width: 480px;
+        width: 90%;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        max-height: 90vh; /* Prevents modal from being too tall on small screens */
+        overflow-y: auto; /* Adds scrollbar if content is too long */
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: none;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #555;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.2s;
+    }
+    .modal-close:hover {
+        background-color: #f1f1f1;
+        transform: scale(1.1);
+    }
+</style>
 
     <script>
         // Auth check: Redirects if not logged in
