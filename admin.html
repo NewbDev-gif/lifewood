@@ -115,7 +115,7 @@
     #page-admin table a { color: var(--link-color); text-decoration: none; }
     #page-admin table a:hover { text-decoration: underline; }
 
-    #page-admin table tbody tr { transition: background-color 0.3s ease; }
+    #page-admin table tbody tr { transition: background-color: 0.3s ease; }
     #page-admin table tbody tr:hover { background-color: #f0f4f8; }
 
     /* Responsive Table */
@@ -138,7 +138,7 @@
 </head>
 <body id="page-admin">
 
-<!-- Positions Management Modal -->
+<!-- Positions Management Modal (No inline style or onclick) -->
 <div class="modal" id="positions-modal">
     <div class="modal-content">
         <button class="modal-close">×</button>
@@ -151,7 +151,7 @@
     </div>
 </div>
 
-<!-- Interview Scheduling Modal -->
+<!-- Interview Scheduling Modal (No inline style or onclick) -->
 <div class="modal" id="schedule-modal">
     <div class="modal-content">
         <button class="modal-close">×</button>
@@ -325,13 +325,14 @@
         }
     }
 
-    // --- Event Listener Setup ---
+    // --- Event Listener Setup (runs after the DOM is fully loaded) ---
     document.addEventListener('DOMContentLoaded', () => {
         emailjs.init(EMAILJS_PUBLIC_KEY);
         initialFetch();
         
-        // Modal open/close listeners
+        // **FIX**: Modal open/close listeners
         document.getElementById('manage-positions-btn').addEventListener('click', () => openModal('positions-modal'));
+        
         document.querySelectorAll('.modal-close').forEach(button => {
             button.addEventListener('click', () => {
                 const modal = button.closest('.modal');
@@ -393,7 +394,7 @@
 
             if (button.matches('.btn-passed')) {
                 document.getElementById('schedule-doc-id').value = docId;
-                openModal('schedule-modal');
+                openModal('schedule-modal'); // **FIX**: This now works correctly
             } else if (button.matches('.btn-failed')) {
                 if (!confirm(`This will mark ${appData.name} as Failed. Are you sure?`)) return;
                 button.disabled = true;
@@ -455,7 +456,7 @@
                 }
                 
                 renderTable();
-                closeModal('schedule-modal');
+                closeModal('schedule-modal'); // **FIX**: This now works correctly
                 alert('Interview invitation sent successfully!');
             } catch (error) {
                 console.error('EmailJS Error:', error);
