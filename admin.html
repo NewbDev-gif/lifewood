@@ -74,7 +74,9 @@
 </script>
 </head>
 <body id="page-admin">
-<!-- The stray "Generated code" text that was here has been REMOVED -->
+<!-- FIX: The stray "Generated code" text that was here has been REMOVED. This was the primary cause of the modal content not appearing. -->
+
+<!-- Modals are now clean, without inline styles or onclick attributes -->
 <div class="modal" id="positions-modal">
     <div class="modal-content">
         <button class="modal-close">×</button>
@@ -250,6 +252,7 @@
         }
     }
 
+    // FIX: Add event listeners for modal buttons since onclick attributes were removed.
     document.getElementById('manage-positions-btn').addEventListener('click', () => {
         openModal('positions-modal');
     });
