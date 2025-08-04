@@ -145,7 +145,7 @@
     import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
     const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
-    const EMAILJS_UNIVERSAL_TEMPLATE_ID = 'template_jfzey48'; 
+    const EMAILJS_UNIVERSAL_TEMPLATE_ID = 'YOUR_UNIVERSAL_TEMPLATE_ID'; 
     const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
     
     const firebaseConfig = {
@@ -306,7 +306,7 @@
             const templateParams = {
                 applicant_email: appData.email,
                 applicant_name: appData.name,
-                email_subject: "Congratulations! You're Hired!",
+                dynamic_subject: "Congratulations! You're Hired!", // RENAMED VARIABLE
                 email_heading: "Congratulations! You're Hired!",
                 email_body: hiredMessage
             };
@@ -331,7 +331,7 @@
             const templateParams = {
                 applicant_email: appData.email,
                 applicant_name: appData.name,
-                email_subject: `Update on your Lifewood Application`,
+                dynamic_subject: `Update on your Lifewood Application`, // RENAMED VARIABLE
                 email_heading: `Update on your Lifewood Application`,
                 email_body: failMessage
             };
@@ -375,7 +375,7 @@
         const templateParams = {
             applicant_email: applicant.email,
             applicant_name: applicant.name,
-            email_subject: `Interview Invitation for the ${applicant.position} Role`,
+            dynamic_subject: `Interview Invitation for the ${applicant.position} Role`, // RENAMED VARIABLE
             email_heading: `Interview Invitation for the ${applicant.position} Role`,
             email_body: scheduleMessage,
         };
