@@ -52,17 +52,16 @@
     .tab-btn.active { color: var(--dark-serpent); border-bottom-color: var(--saffaron); }
     .action-buttons button { margin-right: 8px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; border-radius: 4px; }
     
-    /* Button and Status Colors */
     .btn-passed { background-color: #28a745; color: white; border: 1px solid #28a745; }
     .btn-failed { background-color: #dc3545; color: white; border: 1px solid #dc3545; }
     .btn-delete { background-color: #6c757d; color: white; border: 1px solid #6c757d; }
-    .btn-hired { background-color: #007bff; color: white; border: 1px solid #007bff; } /* New Hired Button */
+    .btn-hired { background-color: #007bff; color: white; border: 1px solid #007bff; }
 
     .status { font-weight: bold; }
     .status-pending { color: #6c757d; }
     .status-scheduled { color: #8e44ad; }
     .status-failed { color: #dc3545; }
-    .status-hired { color: #007bff; } /* New Hired Status Color */
+    .status-hired { color: #007bff; }
 
     #page-admin table tbody tr { transition: background-color 0.3s ease; }
     #page-admin table tbody tr:hover { background-color: #f0f4f8; }
@@ -203,14 +202,39 @@
     });
     
     function renderTable() {
-        let filteredApps = allApplications.filter(app => activeTab === 'pending' ? app.data.status === 'Pending' : app.data.status !== 'Pending');
-        if (positionFilter.value !== 'all') {
-            filteredApps = filteredApps.filter(app => app.data.position === positionFilter.value);
+        // 1. Filter applications based on the active tab and position filter
+        let filteredApps = allApplications.filter(app => {
+            const isInTab = activeTab === 'pending' ? app.data.status === 'Pending' : app.data.status !== 'Pending';
+            const isInPosition = positionFilter.value === 'all' || app.data.position === positionFilter.value;
+            return isInTab && isInPosition;
+        });
+
+        // --- NEW: Sort the 'Processed' tab by status priority ---
+        if (activeTab === 'processed') {
+            const statusPriority = { 'Hired': 1, 'Scheduled': 2, 'Failed': 3 };
+            
+            filteredApps.sort((a, b) => {
+                const priorityA = statusPriority[a.data.status] || 99;
+                const priorityB = statusPriority[b.data.status] || 99;
+
+                // If status is different, sort by priority
+                if (priorityA !== priorityB) {
+                    return priorityA - priorityB;
+                }
+                
+                // If status is the same, sort by original submission date (newest first)
+                const timeA = a.data.submittedAt?.toMillis() || 0;
+                const timeB = b.data.submittedAt?.toMillis() || 0;
+                return timeB - timeA;
+            });
         }
+        
         if (filteredApps.length === 0) {
             applicationsListDiv.innerHTML = `<p>No applications found matching the current filters.</p>`;
             return;
         }
+
+        // 3. Render the HTML table
         let tableHtml = `<table><thead><tr><th>Name</th><th>Email</th><th>Position</th><th>Links</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
         filteredApps.forEach(app => {
             const data = app.data; const docId = app.id; const statusClass = `status-${(data.status || 'pending').toLowerCase()}`;
@@ -220,7 +244,6 @@
                 statusHtml += `<br><small>${date.toLocaleDateString()} @ ${data.interviewTime}</small>`;
             }
             
-            // --- UPDATED: Action Buttons Logic ---
             let actionButtonsHtml = '';
             switch(data.status) {
                 case 'Pending':
@@ -229,7 +252,7 @@
                 case 'Scheduled':
                     actionButtonsHtml = `<button class="btn-hired">Mark as Hired</button><button class="btn-failed">Fail</button><button class="btn-delete">Delete</button>`;
                     break;
-                default: // 'Failed', 'Hired', or any other status
+                default:
                     actionButtonsHtml = `<button class="btn-delete">Delete</button>`;
                     break;
             }
@@ -258,6 +281,7 @@
             await renderPositions();
             await populatePositionFilter();
             const appsCollection = collection(db, "applications");
+            // Initial fetch is always sorted by submission date (desc)
             const q = query(appsCollection, orderBy("submittedAt", "desc"));
             const querySnapshot = await getDocs(q);
             allApplications = querySnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
@@ -288,40 +312,31 @@
         if (!button) return;
         const actionCell = e.target.closest('.action-buttons');
         const docId = actionCell.dataset.docId;
-        const appData = allApplications.find(app => app.id === docId)?.data;
+        const appIndex = allApplications.findIndex(app => app.id === docId);
+        const appData = allApplications[appIndex]?.data;
+        if(!appData) return;
 
         if (button.matches('.btn-passed')) {
             document.getElementById('schedule-doc-id').value = docId;
             window.openModal('schedule-modal');
 
-        } else if (button.matches('.btn-hired')) { // --- NEW: Hired Button Logic ---
+        } else if (button.matches('.btn-hired')) {
             if (!confirm(`This will mark ${appData.name} as HIRED and send an offer email. Are you sure?`)) return;
             button.disabled = true;
 
             const hiredMessage = `We are thrilled to offer you the <strong>${appData.position}</strong> position at Lifewood! We were very impressed with your background and interview.<br><br>Welcome to the team! Please expect a follow-up email from our HR department within the next two business days with your official offer letter and onboarding documents.`;
-
-            const templateParams = {
-                applicant_name: appData.name,
-                applicant_email: appData.email,
-                applicant_position: appData.position,
-                email_subject: `Job Offer from Lifewood for the ${appData.position} Role`,
-                email_body_message: hiredMessage
-            };
+            const templateParams = { applicant_name: appData.name, applicant_email: appData.email, applicant_position: appData.position, email_subject: `Job Offer from Lifewood for the ${appData.position} Role`, email_body_message: hiredMessage };
 
             try {
                 await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_UNIVERSAL_TEMPLATE_ID, templateParams);
                 await updateDoc(doc(db, 'applications', docId), { status: 'Hired' });
-                
-                const appIndex = allApplications.findIndex(app => app.id === docId);
-                if(appIndex > -1) allApplications[appIndex].data.status = 'Hired';
-                
+                allApplications[appIndex].data.status = 'Hired';
                 renderTable();
                 alert('Offer email sent and applicant marked as Hired!');
-
             } catch (error) {
                 console.error('EmailJS Error:', error);
                 alert('Failed to send offer email. Please check the console.');
-                button.disabled = false; // Re-enable on error
+                button.disabled = false;
             }
 
         } else if (button.matches('.btn-failed')) {
@@ -329,25 +344,14 @@
             button.disabled = true;
 
             const failMessage = `Thank you for your interest in the ${appData.position} position and for the time you've invested in this process. After careful consideration, we have decided to move forward with other candidates whose qualifications more closely match the requirements of the role at this time.<br><br>We wish you the best of luck in your job search.`;
-
-            const templateParams = {
-                applicant_name: appData.name,
-                applicant_email: appData.email,
-                applicant_position: appData.position,
-                email_subject: `Update on your application for the ${appData.position} role`,
-                email_body_message: failMessage
-            };
+            const templateParams = { applicant_name: appData.name, applicant_email: appData.email, applicant_position: appData.position, email_subject: `Update on your application for the ${appData.position} role`, email_body_message: failMessage };
 
             try {
                 await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_UNIVERSAL_TEMPLATE_ID, templateParams);
                 await updateDoc(doc(db, 'applications', docId), { status: 'Failed' });
-                
-                const appIndex = allApplications.findIndex(app => app.id === docId);
-                if(appIndex > -1) allApplications[appIndex].data.status = 'Failed';
-                
+                allApplications[appIndex].data.status = 'Failed';
                 renderTable();
                 alert('Rejection email sent successfully.');
-
             } catch (error) {
                 console.error('EmailJS Error:', error);
                 alert('Failed to send rejection email. Check console for details.');
@@ -356,12 +360,9 @@
 
         } else if (button.matches('.btn-delete')) {
             if (confirm('Are you sure you want to permanently delete this application?')) {
-                const appIndex = allApplications.findIndex(app => app.id === docId);
-                if (appIndex > -1) {
-                    allApplications.splice(appIndex, 1);
-                    renderTable(); // Optimistically update UI
-                    await deleteDoc(doc(db, 'applications', docId));
-                }
+                allApplications.splice(appIndex, 1);
+                renderTable();
+                await deleteDoc(doc(db, 'applications', docId));
             }
         }
     });
@@ -372,37 +373,24 @@
         submitBtn.disabled = true; submitBtn.textContent = 'Sending...';
 
         const docId = document.getElementById('schedule-doc-id').value;
-        const applicant = allApplications.find(app => app.id === docId)?.data;
+        const appIndex = allApplications.findIndex(app => app.id === docId);
+        const applicant = allApplications[appIndex]?.data;
         if (!applicant) { alert('Error: Could not find applicant data.'); return; }
 
-        const interviewDate = new Date(document.getElementById('schedule-date').value + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const interviewDateValue = document.getElementById('schedule-date').value;
         const interviewTimeValue = document.getElementById('schedule-time').value;
-
+        const interviewDate = new Date(interviewDateValue + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        
         const scheduleMessage = `We were impressed with your application and would like to invite you for an interview.<br><br><strong>Date:</strong> ${interviewDate}<br><strong>Time:</strong> ${interviewTimeValue}<br><strong>Location:</strong> Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug`;
-
-        const templateParams = {
-            applicant_name: applicant.name,
-            applicant_email: applicant.email,
-            applicant_position: applicant.position,
-            email_subject: `Interview Invitation for the ${applicant.position} Role`,
-            email_body_message: scheduleMessage
-        };
+        const templateParams = { applicant_name: applicant.name, applicant_email: applicant.email, applicant_position: applicant.position, email_subject: `Interview Invitation for the ${applicant.position} Role`, email_body_message: scheduleMessage };
 
         try {
             await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_UNIVERSAL_TEMPLATE_ID, templateParams);
+            await updateDoc(doc(db, 'applications', docId), { status: 'Scheduled', interviewDate: interviewDateValue, interviewTime: interviewTimeValue });
             
-            await updateDoc(doc(db, 'applications', docId), { 
-                status: 'Scheduled',
-                interviewDate: document.getElementById('schedule-date').value,
-                interviewTime: interviewTimeValue,
-            });
-
-            const appIndex = allApplications.findIndex(app => app.id === docId);
-            if(appIndex > -1) {
-                allApplications[appIndex].data.status = 'Scheduled';
-                allApplications[appIndex].data.interviewDate = document.getElementById('schedule-date').value;
-                allApplications[appIndex].data.interviewTime = interviewTimeValue;
-            }
+            allApplications[appIndex].data.status = 'Scheduled';
+            allApplications[appIndex].data.interviewDate = interviewDateValue;
+            allApplications[appIndex].data.interviewTime = interviewTimeValue;
             
             renderTable();
             window.closeModal('schedule-modal');
