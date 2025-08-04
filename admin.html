@@ -126,7 +126,6 @@
                 <div class="filter-controls">
                     <div class="position-filter-container"><label for="position-filter">Filter by Position:</label><select id="position-filter"><option value="all">All Positions</option></select></div>
                     
-                    <!-- === UPDATED: 4-Tab System === -->
                     <div class="tabs">
                         <button class="tab-btn active" data-tab="pending">Pending</button>
                         <button class="tab-btn" data-tab="scheduled">Scheduled</button>
@@ -146,7 +145,7 @@
     import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
     const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
-    const EMAILJS_UNIVERSAL_TEMPLATE_ID = 'template_jfzey48'; 
+    const EMAILJS_UNIVERSAL_TEMPLATE_ID = 'template_jfzey48; 
     const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
     
     const firebaseConfig = {
@@ -173,6 +172,7 @@
     window.openModal = (modalId) => document.getElementById(modalId).style.display = 'flex';
     window.closeModal = (modalId) => document.getElementById(modalId).style.display = 'none';
 
+    // ... (All functions from renderPositions to initialFetch are the same) ...
     const positionsCollection = collection(db, "positions");
     const renderPositions = async () => {
         const querySnapshot = await getDocs(query(positionsCollection, orderBy("name")));
@@ -184,7 +184,6 @@
             positionsListUL.appendChild(li);
         });
     };
-    
     positionMgmtForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const positionName = document.getElementById('new-position-name').value.trim();
@@ -196,7 +195,6 @@
         await renderPositions();
         await populatePositionFilter();
     });
-
     positionsListUL.addEventListener('click', async (e) => {
         const deleteButton = e.target.closest('.delete-position-btn');
         if (deleteButton) {
@@ -208,21 +206,16 @@
             }
         }
     });
-    
     function renderTable() {
-        // --- UPDATED AND SIMPLIFIED: Filter based on the current active tab ---
         let filteredApps = allApplications.filter(app => {
             const status = (app.data.status || 'Pending').toLowerCase();
             const positionMatch = positionFilter.value === 'all' || app.data.position === positionFilter.value;
             return status === activeTab && positionMatch;
         });
-        // The array is already sorted by date from the initial fetch, so no extra sorting is needed.
-
         if (filteredApps.length === 0) {
             applicationsListDiv.innerHTML = `<p>No applications found matching the current filters.</p>`;
             return;
         }
-
         let tableHtml = `<table><thead><tr><th>Name</th><th>Email</th><th>Position</th><th>Links</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
         filteredApps.forEach(app => {
             const data = app.data; const docId = app.id; const statusClass = `status-${(data.status || 'pending').toLowerCase()}`;
@@ -231,7 +224,6 @@
                 const date = new Date(data.interviewDate + 'T00:00:00');
                 statusHtml += `<br><small>${date.toLocaleDateString()} @ ${data.interviewTime}</small>`;
             }
-            
             let actionButtonsHtml = '';
             switch(data.status) {
                 case 'Pending':
@@ -245,12 +237,10 @@
                     actionButtonsHtml = `<button class="btn-delete">Delete</button>`;
                     break;
             }
-
             tableHtml += `<tr id="row-${docId}"><td data-label="Name">${data.name||'N/A'}</td><td data-label="Email"><a href="mailto:${data.email}">${data.email||'N/A'}</a></td><td data-label="Position">${data.position||'N/A'}</td><td data-label="Links"><a href="${data.resumeLink}" target="_blank">Resume</a> ${data.portfolioLink?`| <a href="${data.portfolioLink}" target="_blank">Portfolio</a>`:''}</td><td data-label="Status">${statusHtml}</td><td class="action-buttons" data-doc-id="${docId}">${actionButtonsHtml}</td></tr>`;
         });
         applicationsListDiv.innerHTML = tableHtml + '</tbody></table>';
     }
-
     async function populatePositionFilter() {
         positionFilter.innerHTML = '<option value="all">All Positions</option>';
         const querySnapshot = await getDocs(query(positionsCollection, orderBy("name")));
@@ -264,7 +254,6 @@
             }
         });
     }
-    
     async function initialFetch() {
         try {
             await renderPositions();
@@ -280,10 +269,7 @@
         }
     }
 
-    document.getElementById('manage-positions-btn').addEventListener('click', () => {
-        window.openModal('positions-modal');
-    });
-    
+    document.getElementById('manage-positions-btn').addEventListener('click', () => { window.openModal('positions-modal'); });
     document.querySelectorAll('.tab-btn').forEach(button => {
         button.addEventListener('click', () => {
             document.querySelector('.tab-btn.active').classList.remove('active');
@@ -292,7 +278,6 @@
             renderTable();
         });
     });
-    
     positionFilter.addEventListener('change', renderTable);
     
     applicationsListDiv.addEventListener('click', async (e) => {
@@ -317,8 +302,17 @@
             if (!confirm(`This will mark ${appData.name} as HIRED and send an offer email. Are you sure?`)) return;
             button.disabled = true;
 
-            const hiredMessage = `We are thrilled to offer you the <strong>${appData.position}</strong> position at Lifewood! We were very impressed with your background and interview.<br><br>Welcome to the team! Please expect a follow-up email from our HR department within the next two business days with your official offer letter and onboarding documents.`;
-            const templateParams = { applicant_name: appData.name, applicant_email: appData.email, applicant_position: appData.position, email_subject: `Job Offer from Lifewood for the ${appData.position} Role`, email_body_message: hiredMessage };
+            const hiredMessage = `<p>We are officially offering you the <strong>${appData.position}</strong> position at Lifewood. We were incredibly impressed during the interview process and believe you will be a fantastic addition to our team. Welcome aboard!</p><p>Please expect a follow-up email from our HR department within the next two business days with your official offer letter and onboarding documents.</p>`;
+            
+            // --- REVISED: Match the variable names to your EmailJS template ---
+            const templateParams = {
+                applicant_name: appData.name,
+                email_heading: "Congratulations! You're Hired!", // For the <h2> in your template
+                email_body: hiredMessage,                     // For the main content
+                // These are passed for EmailJS to use internally
+                email_subject: `Congratulations & Job Offer from Lifewood!`,
+                applicant_email: appData.email
+            };
 
             try {
                 await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_UNIVERSAL_TEMPLATE_ID, templateParams);
@@ -335,8 +329,17 @@
             if (!confirm(`This will mark ${appData.name} as Failed and send a rejection email. Are you sure?`)) return;
             button.disabled = true;
 
-            const failMessage = `Thank you for your interest in the ${appData.position} position and for the time you've invested in this process. After careful consideration, we have decided to move forward with other candidates whose qualifications more closely match the requirements of the role at this time.<br><br>We wish you the best of luck in your job search.`;
-            const templateParams = { applicant_name: appData.name, applicant_email: appData.email, applicant_position: appData.position, email_subject: `Update on your application for the ${appData.position} role`, email_body_message: failMessage };
+            const failMessage = `<p>Thank you for your interest in the <strong>${appData.position}</strong> position and for the time you've invested in this process. After careful consideration, we have decided to move forward with other candidates whose qualifications more closely match the requirements of the role at this time.</p><p>We wish you the best of luck in your job search.</p>`;
+            
+            // --- REVISED: Match the variable names to your EmailJS template ---
+            const templateParams = {
+                applicant_name: appData.name,
+                email_heading: "Update on your Lifewood Application",
+                email_body: failMessage,
+                // Internal variables
+                email_subject: `Update on your application for the ${appData.position} role`,
+                applicant_email: appData.email
+            };
 
             try {
                 await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_UNIVERSAL_TEMPLATE_ID, templateParams);
@@ -372,8 +375,17 @@
         const interviewTimeValue = document.getElementById('schedule-time').value;
         const interviewDate = new Date(interviewDateValue + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         
-        const scheduleMessage = `We were impressed with your application and would like to invite you for an interview.<br><br><strong>Date:</strong> ${interviewDate}<br><strong>Time:</strong> ${interviewTimeValue}<br><strong>Location:</strong> Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug`;
-        const templateParams = { applicant_name: applicant.name, applicant_email: applicant.email, applicant_position: applicant.position, email_subject: `Interview Invitation for the ${applicant.position} Role`, email_body_message: scheduleMessage };
+        const scheduleMessage = `<p>We were impressed with your application and would like to invite you for an interview for the <strong>${applicant.position}</strong> role.</p><p><strong>Date:</strong> ${interviewDate}<br><strong>Time:</strong> ${interviewTimeValue}<br><strong>Location:</strong> Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug</p><p>Please let us know if this time works for you. We look forward to meeting you!</p>`;
+
+        // --- REVISED: Match the variable names to your EmailJS template ---
+        const templateParams = {
+            applicant_name: applicant.name,
+            email_heading: "Interview Invitation from Lifewood",
+            email_body: scheduleMessage,
+            // Internal variables
+            email_subject: `Interview Invitation for the ${applicant.position} Role`,
+            applicant_email: applicant.email
+        };
 
         try {
             await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_UNIVERSAL_TEMPLATE_ID, templateParams);
