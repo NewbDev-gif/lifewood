@@ -125,7 +125,15 @@
                 <h2>Submitted Applications</h2>
                 <div class="filter-controls">
                     <div class="position-filter-container"><label for="position-filter">Filter by Position:</label><select id="position-filter"><option value="all">All Positions</option></select></div>
-                    <div class="tabs"><button class="tab-btn active" data-tab="pending">Pending</button><button class="tab-btn" data-tab="processed">Processed</button></div>
+                    
+                    <!-- === UPDATED: 4-Tab System === -->
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="pending">Pending</button>
+                        <button class="tab-btn" data-tab="scheduled">Scheduled</button>
+                        <button class="tab-btn" data-tab="hired">Hired</button>
+                        <button class="tab-btn" data-tab="failed">Failed</button>
+                    </div>
+
                 </div>
                 <div id="applications-list"><p>Loading applications...</p></div>
             </div>
@@ -138,7 +146,7 @@
     import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
 
     const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
-    const EMAILJS_UNIVERSAL_TEMPLATE_ID = 'YOUR_UNIVERSAL_TEMPLATE_ID'; 
+    const EMAILJS_UNIVERSAL_TEMPLATE_ID = 'template_jfzey48'; 
     const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
     
     const firebaseConfig = {
@@ -202,39 +210,19 @@
     });
     
     function renderTable() {
-        // 1. Filter applications based on the active tab and position filter
+        // --- UPDATED AND SIMPLIFIED: Filter based on the current active tab ---
         let filteredApps = allApplications.filter(app => {
-            const isInTab = activeTab === 'pending' ? app.data.status === 'Pending' : app.data.status !== 'Pending';
-            const isInPosition = positionFilter.value === 'all' || app.data.position === positionFilter.value;
-            return isInTab && isInPosition;
+            const status = (app.data.status || 'Pending').toLowerCase();
+            const positionMatch = positionFilter.value === 'all' || app.data.position === positionFilter.value;
+            return status === activeTab && positionMatch;
         });
+        // The array is already sorted by date from the initial fetch, so no extra sorting is needed.
 
-        // --- NEW: Sort the 'Processed' tab by status priority ---
-        if (activeTab === 'processed') {
-            const statusPriority = { 'Hired': 1, 'Scheduled': 2, 'Failed': 3 };
-            
-            filteredApps.sort((a, b) => {
-                const priorityA = statusPriority[a.data.status] || 99;
-                const priorityB = statusPriority[b.data.status] || 99;
-
-                // If status is different, sort by priority
-                if (priorityA !== priorityB) {
-                    return priorityA - priorityB;
-                }
-                
-                // If status is the same, sort by original submission date (newest first)
-                const timeA = a.data.submittedAt?.toMillis() || 0;
-                const timeB = b.data.submittedAt?.toMillis() || 0;
-                return timeB - timeA;
-            });
-        }
-        
         if (filteredApps.length === 0) {
             applicationsListDiv.innerHTML = `<p>No applications found matching the current filters.</p>`;
             return;
         }
 
-        // 3. Render the HTML table
         let tableHtml = `<table><thead><tr><th>Name</th><th>Email</th><th>Position</th><th>Links</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
         filteredApps.forEach(app => {
             const data = app.data; const docId = app.id; const statusClass = `status-${(data.status || 'pending').toLowerCase()}`;
@@ -250,9 +238,10 @@
                     actionButtonsHtml = `<button class="btn-passed">Pass & Schedule</button><button class="btn-failed">Fail</button>`;
                     break;
                 case 'Scheduled':
-                    actionButtonsHtml = `<button class="btn-hired">Mark as Hired</button><button class="btn-failed">Fail</button><button class="btn-delete">Delete</button>`;
+                    actionButtonsHtml = `<button class="btn-hired">Mark as Hired</button><button class="btn-failed">Fail</button>`;
                     break;
-                default:
+                case 'Hired':
+                case 'Failed':
                     actionButtonsHtml = `<button class="btn-delete">Delete</button>`;
                     break;
             }
@@ -281,7 +270,6 @@
             await renderPositions();
             await populatePositionFilter();
             const appsCollection = collection(db, "applications");
-            // Initial fetch is always sorted by submission date (desc)
             const q = query(appsCollection, orderBy("submittedAt", "desc"));
             const querySnapshot = await getDocs(q);
             allApplications = querySnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
@@ -316,6 +304,11 @@
         const appData = allApplications[appIndex]?.data;
         if(!appData) return;
 
+        const updateStatusAndRender = (status) => {
+            allApplications[appIndex].data.status = status;
+            renderTable();
+        };
+
         if (button.matches('.btn-passed')) {
             document.getElementById('schedule-doc-id').value = docId;
             window.openModal('schedule-modal');
@@ -330,8 +323,7 @@
             try {
                 await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_UNIVERSAL_TEMPLATE_ID, templateParams);
                 await updateDoc(doc(db, 'applications', docId), { status: 'Hired' });
-                allApplications[appIndex].data.status = 'Hired';
-                renderTable();
+                updateStatusAndRender('Hired');
                 alert('Offer email sent and applicant marked as Hired!');
             } catch (error) {
                 console.error('EmailJS Error:', error);
@@ -349,8 +341,7 @@
             try {
                 await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_UNIVERSAL_TEMPLATE_ID, templateParams);
                 await updateDoc(doc(db, 'applications', docId), { status: 'Failed' });
-                allApplications[appIndex].data.status = 'Failed';
-                renderTable();
+                updateStatusAndRender('Failed');
                 alert('Rejection email sent successfully.');
             } catch (error) {
                 console.error('EmailJS Error:', error);
