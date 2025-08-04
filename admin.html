@@ -172,7 +172,6 @@
     window.openModal = (modalId) => document.getElementById(modalId).style.display = 'flex';
     window.closeModal = (modalId) => document.getElementById(modalId).style.display = 'none';
 
-    // ... (All functions from renderPositions to initialFetch are unchanged) ...
     const positionsCollection = collection(db, "positions");
     const renderPositions = async () => {
         const querySnapshot = await getDocs(query(positionsCollection, orderBy("name")));
@@ -184,6 +183,7 @@
             positionsListUL.appendChild(li);
         });
     };
+    
     positionMgmtForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const positionName = document.getElementById('new-position-name').value.trim();
@@ -195,6 +195,7 @@
         await renderPositions();
         await populatePositionFilter();
     });
+
     positionsListUL.addEventListener('click', async (e) => {
         const deleteButton = e.target.closest('.delete-position-btn');
         if (deleteButton) {
@@ -206,16 +207,19 @@
             }
         }
     });
+    
     function renderTable() {
         let filteredApps = allApplications.filter(app => {
             const status = (app.data.status || 'Pending').toLowerCase();
             const positionMatch = positionFilter.value === 'all' || app.data.position === positionFilter.value;
             return status === activeTab && positionMatch;
         });
+
         if (filteredApps.length === 0) {
             applicationsListDiv.innerHTML = `<p>No applications found matching the current filters.</p>`;
             return;
         }
+
         let tableHtml = `<table><thead><tr><th>Name</th><th>Email</th><th>Position</th><th>Links</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
         filteredApps.forEach(app => {
             const data = app.data; const docId = app.id; const statusClass = `status-${(data.status || 'pending').toLowerCase()}`;
@@ -224,6 +228,7 @@
                 const date = new Date(data.interviewDate + 'T00:00:00');
                 statusHtml += `<br><small>${date.toLocaleDateString()} @ ${data.interviewTime}</small>`;
             }
+            
             let actionButtonsHtml = '';
             switch(data.status) {
                 case 'Pending':
@@ -237,10 +242,12 @@
                     actionButtonsHtml = `<button class="btn-delete">Delete</button>`;
                     break;
             }
+
             tableHtml += `<tr id="row-${docId}"><td data-label="Name">${data.name||'N/A'}</td><td data-label="Email"><a href="mailto:${data.email}">${data.email||'N/A'}</a></td><td data-label="Position">${data.position||'N/A'}</td><td data-label="Links"><a href="${data.resumeLink}" target="_blank">Resume</a> ${data.portfolioLink?`| <a href="${data.portfolioLink}" target="_blank">Portfolio</a>`:''}</td><td data-label="Status">${statusHtml}</td><td class="action-buttons" data-doc-id="${docId}">${actionButtonsHtml}</td></tr>`;
         });
         applicationsListDiv.innerHTML = tableHtml + '</tbody></table>';
     }
+
     async function populatePositionFilter() {
         positionFilter.innerHTML = '<option value="all">All Positions</option>';
         const querySnapshot = await getDocs(query(positionsCollection, orderBy("name")));
@@ -254,6 +261,7 @@
             }
         });
     }
+    
     async function initialFetch() {
         try {
             await renderPositions();
@@ -268,7 +276,11 @@
             applicationsListDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Could not retrieve data.</p>`;
         }
     }
-    document.getElementById('manage-positions-btn').addEventListener('click', () => { window.openModal('positions-modal'); });
+
+    document.getElementById('manage-positions-btn').addEventListener('click', () => {
+        window.openModal('positions-modal');
+    });
+    
     document.querySelectorAll('.tab-btn').forEach(button => {
         button.addEventListener('click', () => {
             document.querySelector('.tab-btn.active').classList.remove('active');
@@ -277,6 +289,7 @@
             renderTable();
         });
     });
+    
     positionFilter.addEventListener('change', renderTable);
     
     applicationsListDiv.addEventListener('click', async (e) => {
@@ -303,9 +316,8 @@
 
             const hiredMessage = `<p>We are officially offering you the <strong>${appData.position}</strong> position at Lifewood. We were incredibly impressed during the interview process and believe you will be a fantastic addition to our team. Welcome aboard!</p><p>Please expect a follow-up email from our HR department within the next two business days with your official offer letter and onboarding documents.</p>`;
             
-            // --- FINALIZED: Correct parameter structure for EmailJS ---
             const templateParams = {
-                to_email: appData.email,
+                applicant_email: appData.email,
                 applicant_name: appData.name,
                 email_heading: "Congratulations! You're Hired!",
                 email_body: hiredMessage
@@ -328,9 +340,8 @@
 
             const failMessage = `<p>Thank you for your interest in the <strong>${appData.position}</strong> position and for the time you've invested in this process. After careful consideration, we have decided to move forward with other candidates whose qualifications more closely match the requirements of the role at this time.</p><p>We wish you the best of luck in your job search.</p>`;
             
-            // --- FINALIZED: Correct parameter structure for EmailJS ---
             const templateParams = {
-                to_email: appData.email,
+                applicant_email: appData.email,
                 applicant_name: appData.name,
                 email_heading: `Update on your Lifewood Application`,
                 email_body: failMessage
@@ -372,9 +383,8 @@
         
         const scheduleMessage = `<p>We were impressed with your application and would like to invite you for an interview for the <strong>${applicant.position}</strong> role.</p><p><strong>Date:</strong> ${interviewDate}<br><strong>Time:</strong> ${interviewTimeValue}<br><strong>Location:</strong> Ground Floor i2 Building, Jose Del Mar Street Cebu IT Park, Asia Town, Salinas Drive Apas Lahug</p><p>Please let us know if this time works for you. We look forward to meeting you!</p>`;
 
-        // --- FINALIZED: Correct parameter structure for EmailJS ---
         const templateParams = {
-            to_email: applicant.email,
+            applicant_email: applicant.email,
             applicant_name: applicant.name,
             email_heading: `Interview Invitation for the ${applicant.position} Role`,
             email_body: scheduleMessage,
@@ -395,7 +405,8 @@
             console.error('EmailJS Error:', error);
             alert('Failed to send email. Check console for details.');
         } finally {
-            submitBtn.disabled = false; submitBtn.textContent = 'Send Invitation';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send Invitation';
         }
     });
     
