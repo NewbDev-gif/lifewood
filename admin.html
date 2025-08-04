@@ -14,13 +14,11 @@
             --white: #ffffff;
         }
 
-        /* --- START: DEFINITIVE Z-INDEX FIX --- */
         .main-header {
             /* This forces the header's z-index to be lower than the modal, overriding external stylesheets. */
             z-index: 999 !important;
         }
-        /* --- END: DEFINITIVE Z-INDEX FIX --- */
-
+        
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(19, 48, 32, 0.85); backdrop-filter: blur(4px);
@@ -39,6 +37,34 @@
             border: none; font-size: 1.75rem; cursor: pointer;
             line-height: 1; color: #555;
         }
+
+        /* --- START: MODAL BUTTON FIX --- */
+        /* This block creates specific styles for buttons inside the modal to override the generic template styles. */
+        .modal-content .btn {
+            background-color: var(--dark-serpent); /* Use your theme's primary color */
+            color: var(--white); /* Ensure text is visible */
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .modal-content .btn:hover {
+            background-color: #1a472a; /* A slightly lighter green for hover */
+            transform: translateY(-2px);
+        }
+
+        .modal-content .btn:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        /* --- END: MODAL BUTTON FIX --- */
+
         .admin-section { background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 24px; margin-bottom: 40px; }
         .admin-section h2 { margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         .page-actions { margin-bottom: 24px; }
