@@ -23,20 +23,24 @@
         /* This fixes the header logo color to be green */
         .main-header .logo .logo-text { color: #046241; }
         
-        /* This makes the Action buttons look great */
-        .action-buttons button, .action-buttons a {
+        /* THIS IS THE FIX FOR THE ACTION BUTTONS */
+        .action-buttons button {
             display: inline-block;
             padding: 6px 14px;
-            margin: 2px;
+            margin: 2px 4px; /* Added a bit more space */
             border-radius: 6px;
             font-weight: 600;
             text-decoration: none;
             cursor: pointer;
-            border: 1px solid #ccc;
+            border: 1px solid transparent; /* Transparent border by default */
             font-size: 0.85rem;
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .action-buttons button:hover { transform: translateY(-2px); }
+        .action-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
 
         .btn-hired, .btn-passed { background-color: #28a745; color: white; border-color: #28a745; }
         .btn-fail { background-color: #dc3545; color: white; border-color: #dc3545; }
@@ -66,7 +70,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const EMAILJS_SERVICE_ID = 'service_y9vhc7p';
             const EMAILJS_PUBLIC_KEY = 'b5pFhzZJXcBkOv0aC';
-            const APPLICANT_TEMPLATE_ID = 'template_jfzey48'; // <-- PASTE YOUR MASTER TEMPLATE ID
+            const APPLICANT_TEMPLATE_ID = 'template_jzfey48'; // <-- PASTE YOUR MASTER TEMPLATE ID
 
             const firebaseConfig = { apiKey: "AIzaSyDfeMg7BzcR1UvsZtFv4SQQtfJZWSdsGxY", authDomain: "lifewood-420.firebaseapp.com", projectId: "lifewood-420", storageBucket: "lifewood-420.firebasestorage.app", messagingSenderId: "277748825194", appId: "1:277748825194:web:a39e906c4bdf3417e25e13" };
             const app = initializeApp(firebaseConfig);
@@ -86,13 +90,11 @@
             window.openModal = (modalId) => document.getElementById(modalId).style.display = 'flex';
             window.closeModal = (modalId) => document.getElementById(modalId).style.display = 'none';
 
-            const sendApplicantEmail = async (type, appData, details = {}) => { /* ... implementation below ... */ };
-            const renderTable = () => { /* ... implementation below ... */ };
-            const fetchAndRenderAll = async () => { /* ... implementation below ... */ };
-            Object.assign(window, { sendApplicantEmail, renderTable, fetchAndRenderAll });
+            const sendApplicantEmail = async (type, appData, details = {}) => { /* ... same as before ... */ };
+            const renderTable = () => { /* ... same as before ... */ };
+            const fetchAndRenderAll = async () => { /* ... same as before ... */ };
             
             // FULL SCRIPT LOGIC
-            // Main email sending logic
             const sendApplicantEmail = async (type, appData, details = {}) => {
                 const templateParams = {
                     applicant_email: appData.email, applicant_name: appData.name, applicant_position: appData.position,
@@ -118,7 +120,6 @@
                 return emailjs.send(EMAILJS_SERVICE_ID, APPLICANT_TEMPLATE_ID, templateParams);
             };
 
-            // Renders the main table with applications
             const renderTable = () => {
                 let filteredApps = allApplications.filter(app => {
                     const status = app.data.status || 'Pending';
@@ -148,7 +149,6 @@
                 applicationsListDiv.innerHTML = tableHtml + '</tbody></table>';
             };
             
-            // Fetches all data from Firebase
             const fetchAndRenderAll = async () => {
                 try {
                     const appsQuery = query(collection(db, "applications"), orderBy("submittedAt", "desc"));
@@ -172,7 +172,6 @@
                 }
             };
 
-            // Main listener for all table buttons (Pass, Fail, Hired, Delete)
             applicationsListDiv.addEventListener('click', async (e) => {
                 const button = e.target.closest('button');
                 if (!button) return;
@@ -203,11 +202,9 @@
                 }
             });
 
-            // Form submission listeners with FULL ERROR HANDLING
             scheduleForm.addEventListener('submit', async (e) => { e.preventDefault(); const btn = e.target.querySelector('button'); btn.disabled = true; btn.textContent = 'Sending...'; const docId = document.getElementById('schedule-doc-id').value; const appData = allApplications.find(app => app.id === docId)?.data; const interviewDate = document.getElementById('schedule-date').value; const interviewTime = document.getElementById('schedule-time').value; try { await sendApplicantEmail('passed', appData, { interview_date: new Date(interviewDate+'T00:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}), interview_time: interviewTime }); await updateDoc(doc(db, 'applications', docId), { status: 'Scheduled', interviewDate, interviewTime }); closeModal('schedule-modal'); alert('Invitation sent successfully!'); fetchAndRenderAll(); } catch (error) { console.error('Schedule Email Failed:', error); alert('Error: Could not send invitation. Please check the console.'); } finally { btn.disabled = false; btn.textContent = 'Send Invitation'; } });
             hiredForm.addEventListener('submit', async (e) => { e.preventDefault(); const btn = e.target.querySelector('button'); btn.disabled = true; btn.textContent = 'Sending...'; const docId = document.getElementById('hired-doc-id').value; const appData = allApplications.find(app => app.id === docId)?.data; const hiredMessage = document.getElementById('hired-message').value; try { await sendApplicantEmail('hired', appData, { hired_message: hiredMessage }); await updateDoc(doc(db, 'applications', docId), { status: 'Hired' }); closeModal('hired-modal'); alert('Job offer sent successfully!'); fetchAndRenderAll(); } catch (error) { console.error('Hired Email Failed:', error); alert('Error: Could not send job offer. Please check the console.'); } finally { btn.disabled = false; btn.textContent = 'Send Offer'; } });
-
-            // Other UI Listeners
+            
             positionMgmtForm.addEventListener('submit', async (e) => { e.preventDefault(); const input = document.getElementById('new-position-name'); if (!input.value.trim()) return; input.disabled = true; await addDoc(collection(db, "positions"), { name: input.value.trim() }); input.value = ''; input.disabled = false; fetchAndRenderAll(); });
             positionsListUL.addEventListener('click', async (e) => { if(e.target.matches('.delete-position-btn')) { if(confirm('Delete position?')) { await deleteDoc(doc(db, 'positions', e.target.dataset.docId)); fetchAndRenderAll(); } } });
             document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => { document.querySelector('.tab-btn.active').classList.remove('active'); b.classList.add('active'); activeTab = b.dataset.tab; renderTable(); }));
@@ -216,7 +213,6 @@
             document.querySelectorAll('.modal-close').forEach(b => b.addEventListener('click', () => closeModal(b.getAttribute('onclick').split("'")[1])));
             document.getElementById('logout-button').addEventListener('click', () => { sessionStorage.removeItem('lifewood_admin_auth'); window.location.replace('index.html'); });
             
-            // Initial data fetch
             fetchAndRenderAll();
         });
     </script>
